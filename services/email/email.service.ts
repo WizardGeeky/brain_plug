@@ -15,11 +15,28 @@ export class EmailService {
     process.env.APP_URL || "http://localhost:3000";
 
   private static getFrom(): string {
-    return (
-      process.env.EMAIL_FROM ||
-      process.env.SMTP_FROM ||
-      (process.env.SMTP_USER ? `Brain Plug <${process.env.SMTP_USER}>` : "Brain Plug <no-reply@brainplug.ai>")
-    );
+    const smtpUser = process.env.SMTP_USER;
+    const emailFrom = process.env.EMAIL_FROM;
+    const smtpFrom = process.env.SMTP_FROM;
+
+    // For Gmail / authenticated SMTP, ensure sender matches the authenticated user to pass SPF/DKIM
+    if (smtpUser && (smtpUser.includes("@gmail.com") || smtpUser.includes("@"))) {
+      return `Brain Plug <${smtpUser}>`;
+    }
+
+    if (emailFrom && !emailFrom.includes("@brainplug.ai")) {
+      return emailFrom;
+    }
+
+    if (smtpFrom && !smtpFrom.includes("@brainplug.ai")) {
+      return smtpFrom;
+    }
+
+    if (smtpUser) {
+      return `Brain Plug <${smtpUser}>`;
+    }
+
+    return "Brain Plug <no-reply@brainplug.ai>";
   }
 
   /**
@@ -30,7 +47,8 @@ export class EmailService {
       const host = process.env.SMTP_HOST || "";
       const port = parseInt(process.env.SMTP_PORT || "587", 10);
       const user = process.env.SMTP_USER;
-      const pass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD;
+      // Strip any whitespace from app password (e.g. "abcd efgh ijkl mnop" -> "abcdefghijklmnop")
+      const pass = (process.env.SMTP_PASS || process.env.SMTP_PASSWORD || "").replace(/\s+/g, "");
       const secure = process.env.SMTP_SECURE === "true" || port === 465;
 
       if (user && pass) {
@@ -42,9 +60,9 @@ export class EmailService {
               user,
               pass,
             },
-            connectionTimeout: 4000,
-            greetingTimeout: 4000,
-            socketTimeout: 5000,
+            connectionTimeout: 12000,
+            greetingTimeout: 12000,
+            socketTimeout: 15000,
           });
         } else {
           this.transporter = nodemailer.createTransport({
@@ -55,9 +73,9 @@ export class EmailService {
               user,
               pass,
             },
-            connectionTimeout: 4000,
-            greetingTimeout: 4000,
-            socketTimeout: 5000,
+            connectionTimeout: 12000,
+            greetingTimeout: 12000,
+            socketTimeout: 15000,
             tls: {
               rejectUnauthorized: false,
             },
@@ -95,22 +113,30 @@ export class EmailService {
           }),
         });
 
-        return res.ok;
+        const ok = res.ok;
+        if (!ok) {
+          const errText = await res.text();
+          console.error(`[EmailService] ❌ Resend error:`, errText);
+        }
+        return ok;
       }
 
       // Default: Nodemailer SMTP
       const transporter = this.getTransporter();
 
-      await transporter.sendMail({
-        from: this.getFrom(),
+      const fromAddress = this.getFrom();
+      const info = await transporter.sendMail({
+        from: fromAddress,
         to: options.to,
         subject: options.subject,
         html: options.html,
         text: options.text || options.html.replace(/<[^>]*>?/gm, ""),
       });
 
+      console.log(`[EmailService] ✅ Email successfully sent to ${options.to} (Message ID: ${info?.messageId || "ok"})`);
       return true;
-    } catch {
+    } catch (err: any) {
+      console.error(`[EmailService] ❌ Failed to send email to ${options.to}:`, err?.message || err);
       return false;
     }
   }

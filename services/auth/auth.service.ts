@@ -59,8 +59,16 @@ export class AuthService {
       },
     });
 
-    // Non-blocking asynchronous email dispatch for instant response time (<100ms)
-    EmailService.sendOtpEmail(normalizedEmail, otp, purpose).catch(() => {});
+    console.log(`\n==================================================`);
+    console.log(`🔑 [AUTH OTP] 6-Digit Passcode for ${normalizedEmail}: ${otp} (Valid for 5 mins)`);
+    console.log(`==================================================\n`);
+
+    // Dispatch email and log outcome
+    try {
+      await EmailService.sendOtpEmail(normalizedEmail, otp, purpose);
+    } catch (err: any) {
+      console.error(`[AuthService] Error dispatching OTP email to ${normalizedEmail}:`, err?.message || err);
+    }
 
     AuditService.log({
       actorUserId: user?.id,
