@@ -72,7 +72,7 @@ export function BrandLogo({
       : "text-muted-foreground font-medium";
 
   const content = (
-    <div className={cn("inline-flex items-center gap-2 sm:gap-2.5 group select-none shrink-0", className)}>
+    <div className={cn("inline-flex items-center gap-2.5 sm:gap-3 group select-none shrink-0", className)}>
       {/* Standalone "Brain with AI" Vector Icon */}
       <svg
         viewBox="0 0 24 24"
@@ -126,8 +126,8 @@ export function BrandLogo({
       </svg>
 
       {/* Clean, Refined Brand Typography Stack */}
-      <div className="flex flex-col justify-center text-left leading-none">
-        <div className={cn("font-bold tracking-tight flex items-center gap-1 leading-none", brainTextColor, brandTextSize)}>
+      <div className="flex flex-col justify-center text-left">
+        <div className={cn("tracking-tight flex items-center gap-1 leading-none", brainTextColor, brandTextSize)}>
           <span>Brain</span>
           <span className={plugTextColor}>Plug</span>
         </div>
@@ -135,7 +135,7 @@ export function BrandLogo({
         {showTagline && (
           <span
             className={cn(
-              "whitespace-nowrap mt-0.5 sm:mt-1 leading-none",
+              "whitespace-nowrap mt-0.5 leading-none",
               taglineTextColor,
               taglineSize,
               taglineClassName || "hidden sm:inline-block"

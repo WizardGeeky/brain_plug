@@ -125,12 +125,12 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
       {/* ------------------------------------------------------------------ */}
       {/* LEFT: Menu Toggle & Prominent Brand Logo & Breadcrumbs             */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
         {onMenuClick && (
           <button
             type="button"
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-muted/70 active:scale-95 transition-all shrink-0 cursor-pointer"
+            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-xl text-slate-700 dark:text-slate-200 hover:bg-muted/70 active:scale-95 transition-all shrink-0 cursor-pointer"
             aria-label="Open Navigation Menu"
           >
             <Menu className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -174,7 +174,7 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
         <button
           type="button"
           onClick={triggerSearch}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border/80 bg-background/80 hover:bg-accent text-xs text-muted-foreground hover:text-foreground transition-all shadow-xs active:scale-95 group cursor-pointer"
+          className="hidden md:flex items-center gap-2 h-9 px-3 rounded-xl border border-border/80 bg-background/80 hover:bg-accent text-xs text-muted-foreground hover:text-foreground transition-all shadow-xs active:scale-95 group cursor-pointer"
           title="Quick Search (Ctrl+K)"
         >
           <Search className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0 transition-transform group-hover:scale-110" />
@@ -188,7 +188,7 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
         <button
           type="button"
           onClick={triggerSearch}
-          className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-colors active:scale-95 cursor-pointer"
+          className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-all active:scale-95 cursor-pointer"
           title="Search (Ctrl+K)"
           aria-label="Search"
         >
@@ -198,7 +198,7 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
         {/* Developer API Docs Link (Desktop) */}
         <Link
           href="/docs"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background/80 hover:bg-accent text-xs font-semibold text-foreground transition-all shadow-xs active:scale-95"
+          className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-border/80 bg-background/80 hover:bg-accent text-xs font-semibold text-foreground transition-all shadow-xs active:scale-95"
           title="API Documentation"
         >
           <Code2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
@@ -206,14 +206,14 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
         </Link>
 
         {/* Interactive Notifications Bell (Clean Ghost Button) */}
-        <div className="relative" ref={notifRef}>
+        <div className="relative flex items-center justify-center" ref={notifRef}>
           <button
             type="button"
             onClick={() => {
               setNotificationsOpen(!notificationsOpen);
               setProfileOpen(false);
             }}
-            className="relative p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-colors active:scale-95 cursor-pointer"
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-all active:scale-95 cursor-pointer relative"
             aria-label="Notifications"
             title="System Alerts"
           >
@@ -225,7 +225,7 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
 
           {/* Notifications Dropdown Panel */}
           {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-88 rounded-2xl bg-card border border-border shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 top-11 w-80 sm:w-88 rounded-2xl bg-card border border-border shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-center justify-between pb-3 border-b border-border/80">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs sm:text-sm text-foreground">System Alerts</span>
@@ -289,7 +289,7 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
         <button
           type="button"
           onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
-          className="p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-colors active:scale-95 cursor-pointer"
+          className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-all active:scale-95 cursor-pointer"
           aria-label="Toggle Theme Mode"
           title={currentTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
@@ -307,18 +307,18 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
         {/* ------------------------------------------------------------------ */}
         {/* User Profile Avatar Trigger (Clean Glowing Circle)                 */}
         {/* ------------------------------------------------------------------ */}
-        <div className="relative ml-0.5 sm:ml-1" ref={profileRef}>
+        <div className="relative flex items-center justify-center ml-0.5 sm:ml-1" ref={profileRef}>
           <button
             type="button"
             onClick={() => {
               setProfileOpen(!profileOpen);
               setNotificationsOpen(false);
             }}
-            className="flex items-center gap-2 p-0.5 sm:px-2.5 sm:py-1 rounded-full sm:rounded-xl sm:border sm:border-border/80 sm:bg-background/80 hover:bg-accent transition-all cursor-pointer group active:scale-95"
+            className="flex items-center gap-2 h-9 p-0.5 sm:px-2.5 sm:py-1 rounded-full sm:rounded-xl sm:border sm:border-border/80 sm:bg-background/80 hover:bg-accent transition-all cursor-pointer group active:scale-95"
             aria-label="User profile menu"
           >
             {/* Standalone Circular Gradient Avatar */}
-            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-purple-700 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-purple-600/25 ring-2 ring-purple-500/25 group-hover:ring-purple-500/50 transition-all shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-purple-700 flex items-center justify-center text-white text-xs font-bold shadow-sm ring-2 ring-purple-500/25 group-hover:ring-purple-500/50 transition-all shrink-0">
               {getUserInitials()}
             </div>
 
@@ -341,7 +341,7 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
 
           {/* Profile Dropdown Popover */}
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-64 sm:w-72 rounded-2xl bg-card border border-border shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 top-11 w-64 sm:w-72 rounded-2xl bg-card border border-border shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
               {/* Profile Card Header */}
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60 mb-2">
                 <div className="font-bold text-xs sm:text-sm text-foreground truncate">
