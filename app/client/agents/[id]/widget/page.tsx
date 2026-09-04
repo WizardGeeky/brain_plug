@@ -19,6 +19,8 @@ import {
   Plus,
   Trash2,
   RefreshCw,
+  Key,
+  ExternalLink,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,9 +35,11 @@ export default function AgentWidgetCustomizerPage({
   const { id: agentId } = use(params);
   const [config, setConfig] = useState<any>(null);
   const [agent, setAgent] = useState<any>(null);
+  const [apiKey, setApiKey] = useState<string>("");
   const [allowedDomains, setAllowedDomains] = useState<string[]>([]);
   const [newDomain, setNewDomain] = useState("");
   const [previewMode, setPreviewMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [embedFramework, setEmbedFramework] = useState<"html" | "react" | "vue" | "shopify">("html");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [copiedSnippet, setCopiedSnippet] = useState(false);
@@ -43,14 +47,18 @@ export default function AgentWidgetCustomizerPage({
   useEffect(() => {
     async function fetchData() {
       try {
-        const [agentRes, configRes] = await Promise.all([
+        const [agentRes, configRes, keysRes] = await Promise.all([
           fetch(`/api/v1/agents/${agentId}`),
           fetch(`/api/v1/agents/${agentId}/widget`),
+          fetch(`/api/v1/agents/${agentId}/api-keys`),
         ]);
 
         if (agentRes.ok) {
           const aJson = await agentRes.json();
           setAgent(aJson.data);
+          if (aJson.data?.apiKey) {
+            setApiKey(aJson.data.apiKey);
+          }
         }
 
         if (configRes.ok) {
@@ -58,6 +66,14 @@ export default function AgentWidgetCustomizerPage({
           if (cJson.data) {
             setConfig(cJson.data);
             setAllowedDomains(cJson.data.allowedOrigins || []);
+          }
+        }
+
+        if (keysRes.ok) {
+          const kJson = await keysRes.json();
+          const activeKeyObj = (kJson.data || []).find((k: any) => k.status === "ACTIVE" && k.rawKey);
+          if (activeKeyObj?.rawKey) {
+            setApiKey(activeKeyObj.rawKey);
           }
         }
       } catch (err) {
@@ -105,14 +121,52 @@ export default function AgentWidgetCustomizerPage({
   };
 
   const getEmbedCode = () => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://app.brainplug.ai";
-    return `<!-- Brain Plug AI Chat Widget -->
+    const origin = typeof window !== "undefined" && window.location.origin ? window.location.origin : "https://brain-plug.vercel.app";
+    const keyToUse = apiKey || agent?.apiKey || "YOUR_AGENT_API_KEY";
+
+    switch (embedFramework) {
+      case "html":
+        return `<!-- Brain Plug AI Chat Widget -->
 <script
   src="${origin}/widget.js"
   data-agent-id="${agentId}"
-  data-api-key="YOUR_AGENT_API_KEY"
+  data-api-key="${keyToUse}"
   async>
 </script>`;
+      case "react":
+        return `// React / Next.js Component
+import Script from "next/script";
+
+export default function ChatWidget() {
+  return (
+    <Script
+      src="${origin}/widget.js"
+      data-agent-id="${agentId}"
+      data-api-key="${keyToUse}"
+      strategy="lazyOnload"
+    />
+  );
+}`;
+      case "vue":
+        return `<!-- Vue 3 / Nuxt 3 Component -->
+<template>
+  <component
+    :is="'script'"
+    src="${origin}/widget.js"
+    data-agent-id="${agentId}"
+    data-api-key="${keyToUse}"
+    async
+  />
+</template>`;
+      case "shopify":
+        return `{% comment %} Shopify theme.liquid before </body> {% endcomment %}
+<script
+  src="${origin}/widget.js"
+  data-agent-id="${agentId}"
+  data-api-key="${keyToUse}"
+  async>
+</script>`;
+    }
   };
 
   const copyEmbedSnippet = () => {
@@ -694,23 +748,71 @@ export default function AgentWidgetCustomizerPage({
 
       {/* Embed Code Generator Snippet */}
       <Card className="border-border/80 shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/70">
           <div>
-            <CardTitle className="text-base font-bold flex items-center gap-2">
-              <Code2 className="w-4 h-4 text-primary" /> One-Script Integration Code
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-primary" /> One-Script Integration Code
+              </CardTitle>
+              <Badge variant="glow" className="text-[10px] font-semibold">
+                Live Production Ready
+              </Badge>
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
               Copy and paste this script tag into any HTML, Next.js, React, Vue, or Shopify application before the closing <code>&lt;/body&gt;</code> tag.
             </p>
           </div>
-          <Button size="sm" onClick={copyEmbedSnippet} className="text-xs font-semibold shadow-xs">
-            {copiedSnippet ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
-            {copiedSnippet ? "Copied!" : "Copy Embed Script"}
-          </Button>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Framework Selector Pills */}
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/70 text-xs">
+              {(["html", "react", "vue", "shopify"] as const).map((fw) => (
+                <button
+                  key={fw}
+                  type="button"
+                  onClick={() => setEmbedFramework(fw)}
+                  className={`px-2.5 py-1 rounded-lg font-semibold uppercase text-[11px] transition-all ${
+                    embedFramework === fw
+                      ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {fw}
+                </button>
+              ))}
+            </div>
+
+            <Button size="sm" onClick={copyEmbedSnippet} className="text-xs font-semibold shadow-xs">
+              {copiedSnippet ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+              {copiedSnippet ? "Copied!" : "Copy Embed Script"}
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent className="pt-2">
+
+        <CardContent className="pt-4 space-y-3">
+          {/* Active Key Status Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-muted/40 border border-border/60 text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <Key className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span className="text-muted-foreground">Authenticated with:</span>
+              <span className="font-mono font-semibold text-foreground bg-background px-2 py-0.5 rounded border border-border text-[11px] truncate select-all">
+                {apiKey || agent?.apiKey || "Provisioning live key..."}
+              </span>
+              <Badge variant="success" className="text-[9px] font-semibold shrink-0">
+                ACTIVE
+              </Badge>
+            </div>
+
+            <Link
+              href={`/client/agents/${agentId}/api-keys`}
+              className="text-primary hover:underline text-[11px] font-medium inline-flex items-center gap-1 shrink-0"
+            >
+              Manage API Keys <ExternalLink className="w-3 h-3" />
+            </Link>
+          </div>
+
           <div className="p-4 rounded-2xl bg-zinc-950 text-zinc-100 font-mono text-xs border border-zinc-800 shadow-inner overflow-x-auto">
-            <pre className="leading-relaxed">{getEmbedCode()}</pre>
+            <pre className="leading-relaxed whitespace-pre">{getEmbedCode()}</pre>
           </div>
         </CardContent>
       </Card>

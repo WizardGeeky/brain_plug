@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { AgentService } from "@/services/agent/agent.service";
 import { createAgentSchema } from "@/schemas/agent.schema";
 import { apiSuccess, apiError } from "@/lib/errors/app-error";
+import { getOrCreateAgentApiKey } from "@/lib/encryption/api-key-helper";
 
 export async function GET(req: NextRequest) {
   try {
@@ -30,7 +31,17 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return apiSuccess(agents);
+    const enrichedAgents = await Promise.all(
+      agents.map(async (agent) => {
+        const apiKey = await getOrCreateAgentApiKey(agent.tenantId, agent.id);
+        return {
+          ...agent,
+          apiKey,
+        };
+      })
+    );
+
+    return apiSuccess(enrichedAgents);
   } catch (err) {
     return apiError(err);
   }

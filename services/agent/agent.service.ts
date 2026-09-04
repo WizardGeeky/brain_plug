@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/errors/app-error";
 import { AuditService } from "@/server/audit/audit.service";
 import { AgentStatus, AgentType, Prisma } from "@prisma/client";
+import { getOrCreateAgentApiKey } from "@/lib/encryption/api-key-helper";
 
 export interface CreateAgentInput {
   tenantId: string;
@@ -124,6 +125,9 @@ export class AgentService {
       return createdAgent;
     });
 
+    // Auto-provision initial active API key for embed script
+    const apiKey = await getOrCreateAgentApiKey(input.tenantId, agent.id, actorUserId);
+
     AuditService.log({
       tenantId: input.tenantId,
       actorUserId,
@@ -133,7 +137,10 @@ export class AgentService {
       metadata: { name: agent.name, model: model.displayName, allowedDomains: uniqueDomains },
     });
 
-    return agent;
+    return {
+      ...agent,
+      apiKey,
+    };
   }
 
   /**
@@ -141,7 +148,7 @@ export class AgentService {
    */
   public static async getAgentById(tenantId: string, agentId: string) {
     const agent = await prisma.agent.findFirst({
-      where: { id: agentId, tenantId, deletedAt: null },
+      where: { id: agentId, tenantId: tenantId || undefined, deletedAt: null },
       include: {
         geminiModel: true,
         widgetConfig: true,
@@ -159,7 +166,12 @@ export class AgentService {
       throw new AppError("Agent not found", "AGENT_NOT_FOUND", 404);
     }
 
-    return agent;
+    const apiKey = await getOrCreateAgentApiKey(agent.tenantId, agent.id);
+
+    return {
+      ...agent,
+      apiKey,
+    };
   }
 
   /**

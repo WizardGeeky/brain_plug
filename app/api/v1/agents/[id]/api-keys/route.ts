@@ -15,13 +15,40 @@ export async function GET(
     const { id: agentId } = await params;
     const { tenantId } = await requireTenantAccess();
 
-    const keys = await prisma.apiKey.findMany({
+    let keys = await prisma.apiKey.findMany({
       where: {
         agentId,
-        tenantId,
+        ...(tenantId ? { tenantId } : {}),
       },
       orderBy: { createdAt: "desc" },
     });
+
+    if (keys.length === 0) {
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
+        select: { tenantId: true },
+      });
+      const effectiveTenantId = tenantId || agent?.tenantId;
+      if (effectiveTenantId) {
+        const { rawKey, keyPrefix, keyHash } = EncryptionService.generateApiKey("ak_live");
+        const encryptedKey = EncryptionService.encrypt(rawKey);
+        const newKey = await prisma.apiKey.create({
+          data: {
+            tenantId: effectiveTenantId,
+            agentId,
+            name: "Default Widget Key",
+            keyPrefix,
+            keyHash,
+            status: ApiKeyStatus.ACTIVE,
+            scopes: {
+              list: ["chat:write"],
+              enc: encryptedKey,
+            },
+          },
+        });
+        keys = [newKey];
+      }
+    }
 
     const enrichedKeys = await Promise.all(
       keys.map(async (k) => {

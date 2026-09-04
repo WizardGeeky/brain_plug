@@ -22,6 +22,7 @@ import {
   Radio,
   BookOpen,
   Send,
+  Key,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ import {
 export default function ClientDashboardPage() {
   const [data, setData] = useState<any>(null);
   const [agents, setAgents] = useState<any[]>([]);
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [embedFramework, setEmbedFramework] = useState<"html" | "react" | "vue" | "shopify">("html");
   const [copiedSnippet, setCopiedSnippet] = useState(false);
@@ -57,7 +59,11 @@ export default function ClientDashboardPage() {
       }
       if (agentsRes.ok) {
         const aJson = await agentsRes.json();
-        setAgents(aJson.data || []);
+        const loadedAgents = aJson.data || [];
+        setAgents(loadedAgents);
+        if (loadedAgents.length > 0) {
+          setSelectedAgentId((prev) => (prev && loadedAgents.some((a: any) => a.id === prev) ? prev : loadedAgents[0].id));
+        }
       }
     } catch (err) {
       console.error("Failed to load client data:", err);
@@ -81,21 +87,23 @@ export default function ClientDashboardPage() {
     avgLatencyMs: 0,
   };
 
-  const primaryAgent = agents.length > 0 ? agents[0] : null;
+  const selectedAgent =
+    agents.find((a) => a.id === selectedAgentId) || (agents.length > 0 ? agents[0] : null);
 
   const getCodeSnippet = () => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://app.brainplug.ai";
-    const agentId = primaryAgent?.id || "YOUR_AGENT_ID";
+    const origin = typeof window !== "undefined" && window.location.origin ? window.location.origin : "https://brain-plug.vercel.app";
+    const agentId = selectedAgent?.id || "YOUR_AGENT_ID";
+    const apiKey = selectedAgent?.apiKey || "YOUR_AGENT_API_KEY";
 
     switch (embedFramework) {
       case "html":
-        return `<!-- Brain Plug AI Chatbot Widget -->\n<script\n  src="${origin}/widget.js"\n  data-agent-id="${agentId}"\n  async\n></script>`;
+        return `<!-- Brain Plug AI Chatbot Widget -->\n<script\n  src="${origin}/widget.js"\n  data-agent-id="${agentId}"\n  data-api-key="${apiKey}"\n  async\n></script>`;
       case "react":
-        return `// React / Next.js Component\nimport Script from "next/script";\n\nexport default function ChatWidget() {\n  return (\n    <Script\n      src="${origin}/widget.js"\n      data-agent-id="${agentId}"\n      strategy="lazyOnload"\n    />\n  );\n}`;
+        return `// React / Next.js Component\nimport Script from "next/script";\n\nexport default function ChatWidget() {\n  return (\n    <Script\n      src="${origin}/widget.js"\n      data-agent-id="${agentId}"\n      data-api-key="${apiKey}"\n      strategy="lazyOnload"\n    />\n  );\n}`;
       case "vue":
-        return `<!-- Vue 3 / Nuxt 3 Component -->\n<template>\n  <component :is="'script'"\n    src="${origin}/widget.js"\n    data-agent-id="${agentId}"\n    async\n  />\n</template>`;
+        return `<!-- Vue 3 / Nuxt 3 Component -->\n<template>\n  <component :is="'script'"\n    src="${origin}/widget.js"\n    data-agent-id="${agentId}"\n    data-api-key="${apiKey}"\n    async\n  />\n</template>`;
       case "shopify":
-        return `{% comment %} Shopify theme.liquid before </body> {% endcomment %}\n<script\n  src="${origin}/widget.js"\n  data-agent-id="${agentId}"\n  async\n></script>`;
+        return `{% comment %} Shopify theme.liquid before </body> {% endcomment %}\n<script\n  src="${origin}/widget.js"\n  data-agent-id="${agentId}"\n  data-api-key="${apiKey}"\n  async\n></script>`;
     }
   };
 
@@ -286,45 +294,62 @@ export default function ClientDashboardPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {agents.slice(0, 3).map((agent) => (
-                  <div
-                    key={agent.id}
-                    className="p-4 rounded-2xl bg-muted/30 border border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/40 hover:bg-muted/50 transition-all shadow-xs"
-                  >
-                    <div className="flex items-center gap-3.5 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-600/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                        <Bot className="w-5 h-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-bold text-foreground truncate">{agent.name}</h4>
-                          <Badge
-                            variant={agent.isPublished ? "success" : "secondary"}
-                            className="text-[10px] font-semibold"
-                          >
-                            {agent.isPublished ? "Published" : "Draft"}
-                          </Badge>
+                {agents.slice(0, 3).map((agent) => {
+                  const isSelected = selectedAgent?.id === agent.id;
+                  return (
+                    <div
+                      key={agent.id}
+                      onClick={() => setSelectedAgentId(agent.id)}
+                      className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all shadow-xs cursor-pointer ${
+                        isSelected
+                          ? "bg-primary/[0.06] border-primary/60 ring-1 ring-primary/30 shadow-sm"
+                          : "bg-muted/30 border-border/70 hover:border-primary/40 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-600/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                          <Bot className="w-5 h-5" />
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5 font-normal">
-                          {agent.description || "Trained on knowledge documents and custom instructions"}
-                        </p>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-foreground truncate">{agent.name}</h4>
+                            <Badge
+                              variant={agent.isPublished ? "success" : "secondary"}
+                              className="text-[10px] font-semibold"
+                            >
+                              {agent.isPublished ? "Published" : "Draft"}
+                            </Badge>
+                            {isSelected && (
+                              <Badge variant="glow" className="text-[9px] font-bold">
+                                Active in Embed
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5 font-normal">
+                            {agent.description || "Trained on knowledge documents and custom instructions"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto" onClick={(e) => e.stopPropagation()}>
+                        <Link href={`/client/agents/${agent.id}/knowledge`}>
+                          <Button variant="outline" size="sm" className="text-xs font-medium">
+                            <FileText className="w-3.5 h-3.5 mr-1 text-emerald-500" /> Knowledge
+                          </Button>
+                        </Link>
+                        <Link href={`/client/agents/${agent.id}/widget`}>
+                          <Button
+                            size="sm"
+                            className="text-xs font-medium shadow-xs"
+                            onClick={() => setSelectedAgentId(agent.id)}
+                          >
+                            <Code2 className="w-3.5 h-3.5 mr-1" /> Embed Widget
+                          </Button>
+                        </Link>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                      <Link href={`/client/agents/${agent.id}/knowledge`}>
-                        <Button variant="outline" size="sm" className="text-xs font-medium">
-                          <FileText className="w-3.5 h-3.5 mr-1 text-emerald-500" /> Knowledge
-                        </Button>
-                      </Link>
-                      <Link href={`/client/agents/${agent.id}/widget`}>
-                        <Button size="sm" className="text-xs font-medium shadow-xs">
-                          <Code2 className="w-3.5 h-3.5 mr-1" /> Embed Widget
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -332,18 +357,48 @@ export default function ClientDashboardPage() {
 
         {/* 1-Click Multi-Platform Embed Card (1 col) */}
         <Card className="border-border/80 shadow-sm flex flex-col justify-between">
-          <CardHeader>
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
-                <Code2 className="w-4 h-4" />
+          <CardHeader className="pb-3 border-b border-border/70 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary border border-primary/20">
+                  <Code2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-bold">1-Click Website Embed</CardTitle>
+                  <p className="text-xs text-muted-foreground">Add to HTML, React, Vue, or Shopify</p>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-base font-bold">1-Click Website Embed</CardTitle>
-                <p className="text-xs text-muted-foreground">Add to HTML, React, Vue, or Shopify</p>
-              </div>
+
+              {selectedAgent && (
+                <Badge variant="outline" className="text-[10px] font-semibold text-primary border-primary/30">
+                  {selectedAgent.name}
+                </Badge>
+              )}
             </div>
+
+            {/* Target Agent Selector Dropdown */}
+            {agents.length > 1 && (
+              <div className="space-y-1 pt-1">
+                <label className="text-[11px] font-semibold text-muted-foreground flex items-center justify-between">
+                  <span>Select Target Agent:</span>
+                  <span className="text-primary font-bold text-xs">{selectedAgent?.name}</span>
+                </label>
+                <select
+                  value={selectedAgent?.id || ""}
+                  onChange={(e) => setSelectedAgentId(e.target.value)}
+                  className="w-full bg-muted/50 border border-border/80 rounded-xl px-3 py-1.5 text-xs text-foreground font-medium outline-none focus:border-primary transition-colors cursor-pointer"
+                >
+                  {agents.map((a) => (
+                    <option key={a.id} value={a.id} className="bg-card text-foreground">
+                      {a.name} ({a.isPublished ? "Published" : "Draft"})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </CardHeader>
-          <CardContent className="space-y-4">
+
+          <CardContent className="space-y-3.5 pt-3">
             {/* Framework Pills */}
             <div className="flex flex-wrap gap-1.5 bg-muted/60 p-1 rounded-xl border border-border/70">
               {(["html", "react", "vue", "shopify"] as const).map((fw) => (
@@ -352,13 +407,27 @@ export default function ClientDashboardPage() {
                   onClick={() => setEmbedFramework(fw)}
                   className={`flex-1 min-w-[50px] py-1 text-center rounded-lg text-xs font-semibold transition-all duration-200 ${
                     embedFramework === fw
-                      ? "bg-card text-foreground shadow-xs font-bold"
+                      ? "bg-primary text-primary-foreground shadow-xs font-bold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {fw.toUpperCase()}
                 </button>
               ))}
+            </div>
+
+            {/* Active API Key Status Bar */}
+            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/40 border border-border/60 text-[11px]">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Key className="w-3 h-3 text-primary shrink-0" />
+                <span className="text-muted-foreground">Key:</span>
+                <span className="font-mono font-semibold text-foreground truncate max-w-[140px] select-all">
+                  {selectedAgent?.apiKey ? `${selectedAgent.apiKey.substring(0, 12)}...` : "Loading key..."}
+                </span>
+              </div>
+              <Badge variant="success" className="text-[9px] font-semibold shrink-0">
+                ACTIVE
+              </Badge>
             </div>
 
             <div className="p-3.5 rounded-xl bg-zinc-950 text-zinc-100 font-mono text-[11px] overflow-x-auto border border-zinc-800 shadow-inner">
@@ -381,12 +450,18 @@ export default function ClientDashboardPage() {
               )}
             </Button>
 
-            <div className="pt-2 border-t border-border/70 text-center">
+            <div className="pt-2 border-t border-border/70 text-center flex items-center justify-between text-xs">
+              <Link
+                href={selectedAgent ? `/client/agents/${selectedAgent.id}/widget` : "/client/agents"}
+                className="font-medium text-primary hover:underline inline-flex items-center gap-1 text-[11px]"
+              >
+                Customize Appearance &rarr;
+              </Link>
               <Link
                 href="/docs"
-                className="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1"
+                className="font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-[11px]"
               >
-                Read Full Integration Docs <ExternalLink className="w-3 h-3" />
+                Docs <ExternalLink className="w-3 h-3" />
               </Link>
             </div>
           </CardContent>
