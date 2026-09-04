@@ -169,30 +169,27 @@ export default function LandingPage() {
 
         {/* Action Buttons (Desktop & Mobile Adaptive) */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Desktop Only: Sign In Outline Button */}
-          <Link href="/login" className="hidden md:inline-flex">
-            <button
-              type="button"
-              className="border border-purple-200 bg-white hover:bg-purple-50 text-purple-700 font-semibold text-xs h-9 px-3.5 rounded-xl shadow-xs transition-colors flex items-center justify-center cursor-pointer"
-            >
-              Sign In
-            </button>
+          {/* Sign In Outline Link Button */}
+          <Link
+            href="/login"
+            className="inline-flex border border-purple-200 bg-white hover:bg-purple-50 text-purple-700 font-semibold text-xs h-9 px-3.5 rounded-xl shadow-xs transition-colors items-center justify-center cursor-pointer"
+          >
+            Sign In
           </Link>
 
           {/* Tablet & Desktop: Register Workspace CTA */}
-          <Link href="/login?tab=register" className="hidden sm:inline-flex shrink-0">
-            <Button
-              size="sm"
-              className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs h-9 px-4 shadow-md shadow-purple-500/20 rounded-xl flex items-center cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 mr-1 shrink-0" />
-              <span>Register Workspace</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1 hidden lg:inline" />
-            </Button>
+          <Link
+            href="/login?tab=register"
+            className="hidden sm:inline-flex bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs h-9 px-4 shadow-md shadow-purple-500/20 rounded-xl items-center cursor-pointer transition-all shrink-0"
+          >
+            <Sparkles className="w-3.5 h-3.5 mr-1 shrink-0" />
+            <span>Register Workspace</span>
+            <ArrowRight className="w-3.5 h-3.5 ml-1 hidden lg:inline" />
           </Link>
 
           {/* Mobile Hamburger Toggle Button */}
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2 rounded-xl text-slate-700 hover:text-purple-700 hover:bg-purple-50 transition-colors focus:outline-none cursor-pointer shrink-0"
             aria-label="Toggle mobile menu"
@@ -204,7 +201,7 @@ export default function LandingPage() {
 
       {/* Mobile Drawer Menu (Animated Slide Down) */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-16 bg-white/98 backdrop-blur-2xl border-b border-purple-100 p-5 space-y-4 z-40 shadow-xl animate-in slide-in-from-top-3 duration-200">
+        <div className="lg:hidden fixed inset-x-0 top-16 sm:top-20 bg-white/98 backdrop-blur-2xl border-b border-purple-100 p-5 space-y-4 z-40 shadow-xl animate-in slide-in-from-top-3 duration-200">
           <nav className="flex flex-col space-y-2 text-sm font-semibold">
             <a
               href="#features"
@@ -244,19 +241,20 @@ export default function LandingPage() {
           </nav>
 
           <div className="pt-3 border-t border-purple-100 flex flex-col gap-2">
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-              <button
-                type="button"
-                className="w-full bg-white border border-purple-200 hover:bg-purple-50 text-purple-700 font-semibold text-xs h-10 rounded-xl shadow-xs transition-colors flex items-center justify-center cursor-pointer"
-              >
-                Sign In to Workspace
-              </button>
+            <Link
+              href="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full bg-white border border-purple-200 hover:bg-purple-50 text-purple-700 font-semibold text-xs h-10 rounded-xl shadow-xs transition-colors flex items-center justify-center cursor-pointer"
+            >
+              Sign In to Workspace
             </Link>
-            <Link href="/login?tab=register" onClick={() => setMobileMenuOpen(false)}>
-              <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs h-10 flex items-center justify-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Register Workspace (Free)</span>
-              </Button>
+            <Link
+              href="/login?tab=register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs h-10 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-purple-500/20 transition-all"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Register Workspace (Free)</span>
             </Link>
           </div>
         </div>
@@ -271,7 +269,7 @@ export default function LandingPage() {
           <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[300px] sm:w-[650px] h-[300px] sm:h-[450px] bg-gradient-to-tr from-purple-200/50 via-indigo-100/40 to-pink-100/30 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse-glow" />
 
           {/* Floating Feature Pill Left (Desktop) */}
-          <div className="hidden xl:flex items-center gap-2 absolute top-24 left-12 p-3 rounded-2xl bg-white/90 border border-purple-100 shadow-lg shadow-purple-900/5 text-xs font-semibold text-purple-900 animate-float">
+          <div className="hidden xl:flex items-center gap-2 absolute top-24 left-12 p-3 rounded-2xl bg-white/90 border border-purple-100 shadow-lg shadow-purple-900/5 text-xs font-semibold text-purple-900 animate-float pointer-events-none select-none">
             <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700 font-bold">
               ⚡
             </div>
@@ -279,7 +277,7 @@ export default function LandingPage() {
           </div>
 
           {/* Floating Feature Pill Right (Desktop) */}
-          <div className="hidden xl:flex items-center gap-2 absolute top-28 right-12 p-3 rounded-2xl bg-white/90 border border-purple-100 shadow-lg shadow-purple-900/5 text-xs font-semibold text-purple-900 animate-float-reverse">
+          <div className="hidden xl:flex items-center gap-2 absolute top-28 right-12 p-3 rounded-2xl bg-white/90 border border-purple-100 shadow-lg shadow-purple-900/5 text-xs font-semibold text-purple-900 animate-float-reverse pointer-events-none select-none">
             <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">
               📚
             </div>
@@ -308,31 +306,23 @@ export default function LandingPage() {
 
           {/* Responsive CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full sm:w-auto mb-12 sm:mb-16 px-4">
-            <Link href="/login?tab=register" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                className="w-full sm:w-auto h-12 sm:h-14 px-8 text-sm sm:text-base font-semibold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xl shadow-purple-500/25"
-              >
-                <Sparkles className="w-4 h-4 mr-2" /> Register Workspace Free <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+            <Link
+              href="/login?tab=register"
+              className="w-full sm:w-auto h-12 sm:h-14 px-8 text-sm sm:text-base font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xl shadow-purple-500/25 rounded-2xl inline-flex items-center justify-center cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Sparkles className="w-4 h-4 mr-2" /> Register Workspace Free <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
-            <Link href="/login" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto h-12 sm:h-14 px-7 text-sm sm:text-base font-semibold bg-white border-purple-200 text-purple-700 hover:bg-purple-50 shadow-xs"
-              >
-                Sign In to Console
-              </Button>
+            <Link
+              href="/login"
+              className="w-full sm:w-auto h-12 sm:h-14 px-7 text-sm sm:text-base font-semibold bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 shadow-xs rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
+            >
+              Sign In to Console
             </Link>
-            <Link href="/docs" className="w-full sm:w-auto">
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto h-12 sm:h-14 px-6 text-sm sm:text-base font-semibold bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs"
-              >
-                <Code2 className="w-4 h-4 mr-2 text-purple-600" /> Widget Docs
-              </Button>
+            <Link
+              href="/docs"
+              className="w-full sm:w-auto h-12 sm:h-14 px-6 text-sm sm:text-base font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <Code2 className="w-4 h-4 mr-2 text-purple-600" /> Widget Docs
             </Link>
           </div>
 
@@ -873,31 +863,23 @@ export default function LandingPage() {
                 Experience seamless multi-tenant RBAC, Google Gemini orchestration, and instantaneous web widget embeds.
               </p>
               <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link href="/login?tab=register" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    className="w-full sm:w-auto bg-white text-purple-900 hover:bg-purple-50 font-bold shadow-md"
-                  >
-                    <Sparkles className="w-4 h-4 mr-1.5 text-purple-600" /> Register Free Workspace <ArrowRight className="w-4 h-4 ml-1.5" />
-                  </Button>
+                <Link
+                  href="/login?tab=register"
+                  className="w-full sm:w-auto h-12 sm:h-14 px-8 bg-white text-purple-900 hover:bg-purple-50 font-bold shadow-md rounded-2xl inline-flex items-center justify-center cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Sparkles className="w-4 h-4 mr-1.5 text-purple-600" /> Register Free Workspace <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Link>
-                <Link href="/login" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto border-white/60 text-white hover:bg-white/10 font-bold"
-                  >
-                    Sign In to Console
-                  </Button>
+                <Link
+                  href="/login"
+                  className="w-full sm:w-auto h-12 sm:h-14 px-7 border border-white/60 text-white hover:bg-white/10 font-bold rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  Sign In to Console
                 </Link>
-                <Link href="/docs" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 font-medium"
-                  >
-                    Explore API Docs
-                  </Button>
+                <Link
+                  href="/docs"
+                  className="w-full sm:w-auto h-12 sm:h-14 px-6 border border-white/30 text-white hover:bg-white/10 font-medium rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  Explore API Docs
                 </Link>
               </div>
             </div>

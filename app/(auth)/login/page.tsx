@@ -56,6 +56,16 @@ function LoginForm() {
     document.documentElement.classList.remove("dark");
   }, []);
 
+  // Sync mode whenever URL search param ?tab= changes
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "register") {
+      setMode("register");
+    } else {
+      setMode("login");
+    }
+  }, [searchParams]);
+
   // If user already has an active valid session, redirect immediately to dashboard
   useEffect(() => {
     if (!authLoading && isAuthenticated && user) {
