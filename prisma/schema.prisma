@@ -1,0 +1,697 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum OtpPurpose {
+  LOGIN
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  ONBOARDING
+}
+
+enum ModelStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AgentType {
+  CHAT
+  ASSISTANT
+  CUSTOM
+  VOICE
+}
+
+enum AgentStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum DocumentStatus {
+  UPLOADED
+  PROCESSING
+  PROCESSED
+  FAILED
+  DELETED
+}
+
+enum ApiKeyStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum ConversationStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum UsageEventType {
+  CHAT_REQUEST
+  CHAT_SUCCESS
+  CHAT_FAILURE
+  DOCUMENT_UPLOAD
+  DOCUMENT_PROCESSED
+  DOCUMENT_FAILED
+  LOGIN
+  API_KEY_USAGE
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  SECURITY
+}
+
+// CR / Customer Relations Enums
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CLIENT
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  GENERAL
+  TECHNICAL_ISSUE
+  BILLING
+  AGENT_CONFIG
+  RAG_KNOWLEDGE
+  FEATURE_REQUEST
+}
+
+// ---------------------------------------------------------
+// AUTHENTICATION & MULTI-TENANCY
+// ---------------------------------------------------------
+
+model User {
+  id              String      @id @default(uuid())
+  fullName        String      @map("full_name")
+  email           String      @unique
+  mobile          String?
+  gender          String?
+  location        String?
+  avatarUrl       String?     @map("avatar_url")
+  status          UserStatus  @default(ACTIVE)
+  emailVerified   Boolean     @default(false) @map("email_verified")
+  mobileVerified  Boolean     @default(false) @map("mobile_verified")
+  lastLoginAt     DateTime?   @map("last_login_at")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  createdBy       String?     @map("created_by")
+  updatedBy       String?     @map("updated_by")
+  deletedAt       DateTime?   @map("deleted_at")
+  deletedBy       String?     @map("deleted_by")
+
+  // Relations
+  tenantRoles      UserTenantRole[]
+  sessions         Session[]
+  otpVerifications OtpVerification[]
+  onboardingTokens OnboardingToken[]
+  uploadedDocs     Document[]        @relation("DocumentUploader")
+  createdApiKeys   ApiKey[]          @relation("ApiKeyCreator")
+  auditLogs        AuditLog[]        @relation("ActorAuditLogs")
+  notifications    Notification[]
+  createdTickets   Ticket[]          @relation("TicketCreator")
+  assignedTickets  Ticket[]          @relation("TicketAssignee")
+  ticketMessages   TicketMessage[]
+
+  @@index([email])
+  @@index([status])
+  @@map("users")
+}
+
+model Tenant {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  companyName String       @map("company_name")
+  email       String
+  mobile      String?
+  logoUrl     String?      @map("logo_url")
+  status      TenantStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
+
+  // Relations
+  userRoles        UserTenantRole[]
+  agents           Agent[]
+  documents        Document[]
+  documentChunks   DocumentChunk[]
+  apiKeys          ApiKey[]
+  allowedDomains   AllowedDomain[]
+  conversations    Conversation[]
+  usageEvents      UsageEvent[]
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  onboardingTokens OnboardingToken[]
+  tickets          Ticket[]
+
+  @@index([slug])
+  @@index([status])
+  @@map("tenants")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  permissions RolePermission[]
+  userRoles   UserTenantRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  description String?
+  module      String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@index([module])
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String     @map("role_id")
+  permissionId String     @map("permission_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserTenantRole {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tenantId  String?  @map("tenant_id")
+  roleId    String   @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role   Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId, roleId])
+  @@index([userId])
+  @@index([tenantId])
+  @@index([roleId])
+  @@map("user_tenant_roles")
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String    @map("user_id")
+  tenantId         String?   @map("tenant_id")
+  ipAddress        String?   @map("ip_address")
+  userAgent        String?   @map("user_agent")
+  device           String?
+  refreshTokenHash String?   @map("refresh_token_hash")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  lastActiveAt     DateTime  @default(now()) @map("last_active_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshTokenHash])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model OtpVerification {
+  id           String     @id @default(uuid())
+  userId       String?    @map("user_id")
+  email        String
+  purpose      OtpPurpose
+  otpHash      String     @map("otp_hash")
+  expiresAt    DateTime   @map("expires_at")
+  attemptCount Int        @default(0) @map("attempt_count")
+  maxAttempts  Int        @default(5) @map("max_attempts")
+  usedAt       DateTime?  @map("used_at")
+  ipAddress    String?    @map("ip_address")
+  userAgent    String?    @map("user_agent")
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, purpose])
+  @@index([expiresAt])
+  @@map("otp_verifications")
+}
+
+model OnboardingToken {
+  id        String    @id @default(uuid())
+  tenantId  String    @map("tenant_id")
+  userId    String    @map("user_id")
+  email     String
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([email])
+  @@map("onboarding_tokens")
+}
+
+// ---------------------------------------------------------
+// AI & GEMINI MODELS
+// ---------------------------------------------------------
+
+model GeminiModel {
+  id                String      @id @default(uuid())
+  modelName         String      @unique @map("model_name")
+  displayName       String      @map("display_name")
+  provider          String      @default("Google")
+  description       String?
+  status            ModelStatus @default(ACTIVE)
+  isPublished       Boolean     @default(false) @map("is_published")
+  inputTokenPrice   Decimal     @default(0.0000) @map("input_token_price") @db.Decimal(10, 6)
+  outputTokenPrice  Decimal     @default(0.0000) @map("output_token_price") @db.Decimal(10, 6)
+  maxTokens         Int         @default(8192) @map("max_tokens")
+  supportsStreaming Boolean     @default(true) @map("supports_streaming")
+  supportsVision    Boolean     @default(false) @map("supports_vision")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  agents Agent[]
+
+  @@index([isPublished, status])
+  @@map("gemini_models")
+}
+
+// ---------------------------------------------------------
+// AGENTS & WIDGET CONFIGURATION
+// ---------------------------------------------------------
+
+model Agent {
+  id                  String       @id @default(uuid())
+  tenantId            String       @map("tenant_id")
+  name                String
+  description         String?
+  type                AgentType    @default(CHAT)
+  avatar              String?
+  systemPrompt        String       @default("You are a helpful AI assistant.") @map("system_prompt") @db.Text
+  welcomeMessage      String       @default("Hello! How can I assist you today?") @map("welcome_message")
+  geminiModelId       String?      @map("gemini_model_id")
+  temperature         Float        @default(0.7)
+  maxOutputTokens     Int          @default(2048) @map("max_output_tokens")
+  status              AgentStatus  @default(DRAFT)
+  isPublic            Boolean      @default(false) @map("is_public")
+  ragEnabled          Boolean      @default(true) @map("rag_enabled")
+  topK                Int          @default(5) @map("top_k")
+  similarityThreshold Float        @default(0.4) @map("similarity_threshold")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+  deletedAt           DateTime?    @map("deleted_at")
+
+  tenant         Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  geminiModel    GeminiModel?        @relation(fields: [geminiModelId], references: [id], onDelete: SetNull)
+  widgetConfig   AgentWidgetConfig?
+  documents      Document[]
+  documentChunks DocumentChunk[]
+  apiKeys        ApiKey[]
+  allowedDomains AllowedDomain[]
+  conversations  Conversation[]
+  usageEvents    UsageEvent[]
+  tickets        Ticket[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([geminiModelId])
+  @@map("agents")
+}
+
+model AgentWidgetConfig {
+  id              String   @id @default(uuid())
+  agentId         String   @unique @map("agent_id")
+  tenantId        String   @map("tenant_id")
+  position        String   @default("BOTTOM_RIGHT")
+  launcherType    String   @default("BUTTON") @map("launcher_type")
+  buttonLabel     String   @default("Chat with us") @map("button_label")
+  buttonIcon      String   @default("MessageSquare") @map("button_icon")
+  primaryColor    String   @default("#7c3aed") @map("primary_color")
+  secondaryColor  String   @default("#ede9fe") @map("secondary_color")
+  backgroundColor String   @default("#ffffff") @map("background_color")
+  textColor       String   @default("#1e1b4b") @map("text_color")
+  launcherColor   String   @default("#7c3aed") @map("launcher_color")
+  width           Int      @default(400)
+  height          Int      @default(600)
+  borderRadius    Int      @default(16) @map("border_radius")
+  fontSize        Int      @default(14) @map("font_size")
+  animation       String   @default("slide-up")
+  mobileMode      String   @default("bottom-sheet") @map("mobile_mode")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("agent_widget_configs")
+}
+
+// ---------------------------------------------------------
+// KNOWLEDGE BASE & EMBEDDINGS (RAG)
+// ---------------------------------------------------------
+
+model Document {
+  id               String         @id @default(uuid())
+  tenantId         String         @map("tenant_id")
+  agentId          String         @map("agent_id")
+  uploadedById     String?        @map("uploaded_by_id")
+  fileName         String         @map("file_name")
+  originalFileName String         @map("original_file_name")
+  fileSize         Int            @map("file_size")
+  mimeType         String         @map("mime_type")
+  storagePath      String         @map("storage_path")
+  cloudinaryUrl    String?        @map("cloudinary_url")
+  cloudinaryPublicId String?      @map("cloudinary_public_id")
+  status           DocumentStatus @default(UPLOADED)
+  errorMessage     String?        @map("error_message")
+  chunkCount       Int            @default(0) @map("chunk_count")
+  tokenCount       Int            @default(0) @map("token_count")
+  processingTimeMs Int?           @map("processing_time_ms")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  deletedAt        DateTime?      @map("deleted_at")
+
+  tenant     Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent      Agent           @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  uploader   User?           @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  chunks     DocumentChunk[]
+
+  @@index([tenantId])
+  @@index([agentId])
+  @@index([status])
+  @@map("documents")
+}
+
+model DocumentChunk {
+  id         String   @id @default(uuid())
+  documentId String   @map("document_id")
+  tenantId   String   @map("tenant_id")
+  agentId    String   @map("agent_id")
+  chunkIndex Int      @map("chunk_index")
+  content    String   @db.Text
+  tokenCount Int      @map("token_count")
+  embedding  Json     @map("embedding") // Vector array stored as high-speed JSON array
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent    Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([agentId])
+  @@index([tenantId])
+  @@map("document_chunks")
+}
+
+// ---------------------------------------------------------
+// API KEYS & DOMAIN SECURITY
+// ---------------------------------------------------------
+
+model ApiKey {
+  id          String       @id @default(uuid())
+  tenantId    String       @map("tenant_id")
+  agentId     String       @map("agent_id")
+  createdById String?      @map("created_by_id")
+  name        String
+  keyPrefix   String       @map("key_prefix")
+  keyHash     String       @unique @map("key_hash")
+  status      ApiKeyStatus @default(ACTIVE)
+  scopes      Json         @default("[\"chat:write\"]")
+  expiresAt   DateTime?    @map("expires_at")
+  lastUsedAt  DateTime?    @map("last_used_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  revokedAt   DateTime?    @map("revoked_at")
+
+  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  creator User?  @relation("ApiKeyCreator", fields: [createdById], references: [id])
+
+  @@index([tenantId])
+  @@index([agentId])
+  @@index([keyHash])
+  @@index([status])
+  @@map("api_keys")
+}
+
+model AllowedDomain {
+  id        String   @id @default(uuid())
+  agentId   String   @map("agent_id")
+  tenantId  String   @map("tenant_id")
+  domain    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  agent  Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, domain])
+  @@index([agentId])
+  @@index([tenantId])
+  @@map("allowed_domains")
+}
+
+// ---------------------------------------------------------
+// CONVERSATIONS & CHAT HISTORY
+// ---------------------------------------------------------
+
+model Conversation {
+  id         String             @id @default(uuid())
+  tenantId   String             @map("tenant_id")
+  agentId    String             @map("agent_id")
+  sessionId  String?            @map("session_id")
+  title      String?
+  status     ConversationStatus @default(ACTIVE)
+  userIp     String?            @map("user_ip")
+  userAgent  String?            @map("user_agent")
+  userOrigin String?            @map("user_origin")
+  metadata   Json?
+  createdAt  DateTime           @default(now()) @map("created_at")
+  updatedAt  DateTime           @updatedAt @map("updated_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent    Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([tenantId])
+  @@index([agentId])
+  @@index([sessionId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String      @id @default(uuid())
+  conversationId String      @map("conversation_id")
+  role           MessageRole
+  content        String      @db.Text
+  sources        Json?       // Array of retrieved citations
+  inputTokens    Int         @default(0) @map("input_tokens")
+  outputTokens   Int         @default(0) @map("output_tokens")
+  latencyMs      Int         @default(0) @map("latency_ms")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+// ---------------------------------------------------------
+// CR / CUSTOMER RELATIONS & SUPPORT TICKETING
+// ---------------------------------------------------------
+
+model Ticket {
+  id           String         @id @default(uuid())
+  ticketNumber String         @unique @map("ticket_number")
+  tenantId     String         @map("tenant_id")
+  createdById  String         @map("created_by_id")
+  assignedToId String?        @map("assigned_to_id")
+  agentId      String?        @map("agent_id")
+  title        String
+  description  String         @db.Text
+  category     TicketCategory @default(GENERAL)
+  priority     TicketPriority @default(MEDIUM)
+  status       TicketStatus   @default(OPEN)
+  resolvedAt   DateTime?      @map("resolved_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  deletedAt    DateTime?      @map("deleted_at")
+
+  tenant     Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator    User            @relation("TicketCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  assignedTo User?           @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  agent      Agent?          @relation(fields: [agentId], references: [id])
+  messages   TicketMessage[]
+
+  @@index([tenantId])
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([priority])
+  @@map("tickets")
+}
+
+model TicketMessage {
+  id             String   @id @default(uuid())
+  ticketId       String   @map("ticket_id")
+  senderId       String   @map("sender_id")
+  senderRole     String   @map("sender_role") // "SUPER_ADMIN" | "CLIENT_ADMIN" | "CLIENT_USER"
+  content        String   @db.Text
+  attachmentUrl  String?  @map("attachment_url")
+  attachmentName String?  @map("attachment_name")
+  isInternalNote Boolean  @default(false) @map("is_internal_note")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([senderId])
+  @@map("ticket_messages")
+}
+
+// ---------------------------------------------------------
+// TELEMETRY, AUDIT & NOTIFICATIONS
+// ---------------------------------------------------------
+
+model UsageEvent {
+  id             String         @id @default(uuid())
+  tenantId       String         @map("tenant_id")
+  agentId        String?        @map("agent_id")
+  apiKeyId       String?        @map("api_key_id")
+  eventType      UsageEventType @map("event_type")
+  inputTokens    Int            @default(0) @map("input_tokens")
+  outputTokens   Int            @default(0) @map("output_tokens")
+  totalTokens    Int            @default(0) @map("total_tokens")
+  latencyMs      Int            @default(0) @map("latency_ms")
+  estimatedCost  Decimal        @default(0.000000) @map("estimated_cost") @db.Decimal(12, 6)
+  statusCode     Int            @default(200) @map("status_code")
+  errorMessage   String?        @map("error_message")
+  ipAddress      String?        @map("ip_address")
+  origin         String?
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  agent  Agent? @relation(fields: [agentId], references: [id])
+
+  @@index([tenantId])
+  @@index([agentId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("usage_events")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  tenantId    String?  @map("tenant_id")
+  actorUserId String?  @map("actor_user_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String?  @map("entity_id")
+  metadata    Json?
+  ipAddress   String?  @map("ip_address")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  actor  User?   @relation("ActorAuditLogs", fields: [actorUserId], references: [id])
+
+  @@index([tenantId])
+  @@index([actorUserId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  tenantId  String?          @map("tenant_id")
+  userId    String?          @map("user_id")
+  title     String
+  message   String           @db.Text
+  type      NotificationType @default(INFO)
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([readAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model PlatformSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
+}
