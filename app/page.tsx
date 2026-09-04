@@ -162,7 +162,7 @@ export default function LandingPage() {
           <a href="#faq" className="hover:text-purple-700 transition-colors">
             FAQ
           </a>
-          <Link href="/docs" className="text-purple-600 hover:text-purple-800 font-bold inline-flex items-center gap-1">
+          <Link href="/docs" prefetch={true} className="text-purple-600 hover:text-purple-800 font-bold inline-flex items-center gap-1">
             <Code2 className="w-3.5 h-3.5" /> API Docs
           </Link>
         </nav>
@@ -172,6 +172,7 @@ export default function LandingPage() {
           {/* Sign In Outline Link Button */}
           <Link
             href="/login"
+            prefetch={true}
             className="inline-flex border border-purple-200 bg-white hover:bg-purple-50 text-purple-700 font-semibold text-xs h-9 px-3.5 rounded-xl shadow-xs transition-colors items-center justify-center cursor-pointer"
           >
             Sign In
@@ -180,6 +181,7 @@ export default function LandingPage() {
           {/* Tablet & Desktop: Register Workspace CTA */}
           <Link
             href="/login?tab=register"
+            prefetch={true}
             className="hidden sm:inline-flex bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs h-9 px-4 shadow-md shadow-purple-500/20 rounded-xl items-center cursor-pointer transition-all shrink-0"
           >
             <Sparkles className="w-3.5 h-3.5 mr-1 shrink-0" />
@@ -233,6 +235,7 @@ export default function LandingPage() {
             </a>
             <Link
               href="/docs"
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className="p-3 rounded-xl hover:bg-purple-50 text-purple-700 flex items-center gap-2"
             >
@@ -243,6 +246,7 @@ export default function LandingPage() {
           <div className="pt-3 border-t border-purple-100 flex flex-col gap-2">
             <Link
               href="/login"
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className="w-full bg-white border border-purple-200 hover:bg-purple-50 text-purple-700 font-semibold text-xs h-10 rounded-xl shadow-xs transition-colors flex items-center justify-center cursor-pointer"
             >
@@ -250,6 +254,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/login?tab=register"
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className="w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs h-10 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-purple-500/20 transition-all"
             >
@@ -308,18 +313,21 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full sm:w-auto mb-12 sm:mb-16 px-4">
             <Link
               href="/login?tab=register"
+              prefetch={true}
               className="w-full sm:w-auto h-12 sm:h-14 px-8 text-sm sm:text-base font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xl shadow-purple-500/25 rounded-2xl inline-flex items-center justify-center cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <Sparkles className="w-4 h-4 mr-2" /> Register Workspace Free <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
             <Link
               href="/login"
+              prefetch={true}
               className="w-full sm:w-auto h-12 sm:h-14 px-7 text-sm sm:text-base font-semibold bg-white border border-purple-200 text-purple-700 hover:bg-purple-50 shadow-xs rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
             >
               Sign In to Console
             </Link>
             <Link
               href="/docs"
+              prefetch={true}
               className="w-full sm:w-auto h-12 sm:h-14 px-6 text-sm sm:text-base font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-xs rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
             >
               <Code2 className="w-4 h-4 mr-2 text-purple-600" /> Widget Docs
@@ -865,18 +873,21 @@ export default function LandingPage() {
               <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href="/login?tab=register"
+                  prefetch={true}
                   className="w-full sm:w-auto h-12 sm:h-14 px-8 bg-white text-purple-900 hover:bg-purple-50 font-bold shadow-md rounded-2xl inline-flex items-center justify-center cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Sparkles className="w-4 h-4 mr-1.5 text-purple-600" /> Register Free Workspace <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Link>
                 <Link
                   href="/login"
+                  prefetch={true}
                   className="w-full sm:w-auto h-12 sm:h-14 px-7 border border-white/60 text-white hover:bg-white/10 font-bold rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
                 >
                   Sign In to Console
                 </Link>
                 <Link
                   href="/docs"
+                  prefetch={true}
                   className="w-full sm:w-auto h-12 sm:h-14 px-6 border border-white/30 text-white hover:bg-white/10 font-medium rounded-2xl inline-flex items-center justify-center cursor-pointer transition-colors"
                 >
                   Explore API Docs
@@ -902,21 +913,21 @@ export default function LandingPage() {
           <div className="space-y-2.5">
             <h5 className="font-bold text-[#1E1B4B] uppercase tracking-wider text-[11px]">Product</h5>
             <ul className="space-y-2 text-slate-600">
-              <li><Link href="/docs" className="hover:text-purple-700 transition-colors">API Documentation</Link></li>
-              <li><Link href="/docs" className="hover:text-purple-700 transition-colors">Widget Integration</Link></li>
-              <li><Link href="/login" className="hover:text-purple-700 transition-colors">Gemini Model Registry</Link></li>
-              <li><Link href="/login" className="hover:text-purple-700 transition-colors">Knowledge Base RAG</Link></li>
+              <li><Link href="/docs" prefetch={true} className="hover:text-purple-700 transition-colors">API Documentation</Link></li>
+              <li><Link href="/docs" prefetch={true} className="hover:text-purple-700 transition-colors">Widget Integration</Link></li>
+              <li><Link href="/login" prefetch={true} className="hover:text-purple-700 transition-colors">Gemini Model Registry</Link></li>
+              <li><Link href="/login" prefetch={true} className="hover:text-purple-700 transition-colors">Knowledge Base RAG</Link></li>
             </ul>
           </div>
 
           <div className="space-y-2.5">
             <h5 className="font-bold text-[#1E1B4B] uppercase tracking-wider text-[11px]">Control Center</h5>
             <ul className="space-y-2 text-slate-600">
-              <li><Link href="/login?tab=register" className="text-purple-700 font-bold hover:underline">Register Workspace (Open)</Link></li>
-              <li><Link href="/login" className="hover:text-purple-700 transition-colors">Sign In (Passwordless)</Link></li>
-              <li><Link href="/login" className="hover:text-purple-700 transition-colors">Super Admin Dashboard</Link></li>
-              <li><Link href="/login" className="hover:text-purple-700 transition-colors">Client Workspace</Link></li>
-              <li><Link href="/login" className="hover:text-purple-700 transition-colors">Support Ticketing</Link></li>
+              <li><Link href="/login?tab=register" prefetch={true} className="text-purple-700 font-bold hover:underline">Register Workspace (Open)</Link></li>
+              <li><Link href="/login" prefetch={true} className="hover:text-purple-700 transition-colors">Sign In (Passwordless)</Link></li>
+              <li><Link href="/login" prefetch={true} className="hover:text-purple-700 transition-colors">Super Admin Dashboard</Link></li>
+              <li><Link href="/login" prefetch={true} className="hover:text-purple-700 transition-colors">Client Workspace</Link></li>
+              <li><Link href="/login" prefetch={true} className="hover:text-purple-700 transition-colors">Support Ticketing</Link></li>
             </ul>
           </div>
 
@@ -934,8 +945,8 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto pt-6 border-t border-purple-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>&copy; {new Date().getFullYear()} Brain Plug Inc. All rights reserved.</div>
           <div className="flex items-center gap-6">
-            <Link href="/docs" className="hover:text-purple-700">Developer Hub</Link>
-            <Link href="/login" className="hover:text-purple-700">Admin Portal</Link>
+            <Link href="/docs" prefetch={true} className="hover:text-purple-700">Developer Hub</Link>
+            <Link href="/login" prefetch={true} className="hover:text-purple-700">Admin Portal</Link>
           </div>
         </div>
       </footer>

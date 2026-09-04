@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { ClientSidebar } from "@/components/layout/client-sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 export default function ClientLayout({
   children,
@@ -40,6 +41,7 @@ export default function ClientLayout({
 
   return (
     <div className="min-h-screen flex bg-background">
+      <CommandPalette />
       <ClientSidebar
         isMobileOpen={isMobileMenuOpen}
         onMobileClose={() => setIsMobileMenuOpen(false)}

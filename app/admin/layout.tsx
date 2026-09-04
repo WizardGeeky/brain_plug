@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { CommandPalette } from "@/components/layout/command-palette";
 
 export default function AdminLayout({
   children,
@@ -40,6 +41,7 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen flex bg-background">
+      <CommandPalette />
       <AdminSidebar
         isMobileOpen={isMobileMenuOpen}
         onMobileClose={() => setIsMobileMenuOpen(false)}
