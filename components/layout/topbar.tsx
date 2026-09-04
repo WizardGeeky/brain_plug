@@ -20,15 +20,12 @@ import {
   User as UserIcon,
   LogOut,
   ChevronDown,
-  ExternalLink,
   Settings,
   Key,
   HelpCircle,
-  X,
   Zap,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
-import { Badge } from "@/components/ui/badge";
 
 export interface TopbarProps {
   title?: string;
@@ -124,38 +121,32 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
   const RoleIcon = roleInfo.icon;
 
   return (
-    <header className="h-16 sm:h-18 border-b border-border/80 bg-card/85 backdrop-blur-2xl px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-all shadow-xs select-none">
+    <header className="h-16 sm:h-18 border-b border-border/80 bg-background/95 sm:bg-card/85 backdrop-blur-2xl px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-all select-none">
       {/* ------------------------------------------------------------------ */}
-      {/* LEFT SECTION: Mobile Menu, Brand, Breadcrumbs & Telemetry Indicator */}
+      {/* LEFT: Menu Toggle & Prominent Brand Logo & Breadcrumbs             */}
       {/* ------------------------------------------------------------------ */}
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         {onMenuClick && (
           <button
             type="button"
             onClick={onMenuClick}
-            className="lg:hidden p-2 rounded-xl border border-border/90 bg-background/80 hover:bg-accent text-foreground transition-all shrink-0 active:scale-95 shadow-xs"
+            className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-muted/70 active:scale-95 transition-all shrink-0 cursor-pointer"
             aria-label="Open Navigation Menu"
           >
-            <Menu className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <Menu className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </button>
         )}
 
-        {/* Mobile Brand Display */}
-        <div className="lg:hidden flex items-center gap-2 min-w-0">
-          <BrandLogo size="sm" tagline={tagline} />
-          <span
-            className={`hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${roleInfo.color}`}
-          >
-            <RoleIcon className="w-3 h-3" />
-            <span className="truncate">{roleInfo.label}</span>
-          </span>
+        {/* Mobile Brand Display - Big, Bold & Beautiful */}
+        <div className="lg:hidden flex items-center min-w-0">
+          <BrandLogo size="md" tagline={tagline} taglineClassName="hidden sm:inline-block" />
         </div>
 
         {/* Desktop Breadcrumbs & Live Status */}
         <div className="hidden lg:flex items-center gap-3 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Brain Plug</span>
-            <span className="text-muted-foreground/50 text-xs">/</span>
+            <span className="text-xs font-semibold text-muted-foreground">Brain Plug</span>
+            <span className="text-muted-foreground/40 text-xs">/</span>
             <h1 className="text-sm font-bold text-foreground tracking-tight truncate">
               {title || "Dashboard"}
             </h1>
@@ -176,34 +167,45 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
       </div>
 
       {/* ------------------------------------------------------------------ */}
-      {/* RIGHT SECTION: Quick Search, Notifications, Theme & User Profile    */}
+      {/* RIGHT: Streamlined Actions, Notifications, Theme & Avatar          */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-        {/* Quick Search Button (Triggers Command Palette Ctrl+K) */}
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        {/* Desktop Quick Search Pill (Ctrl+K) */}
         <button
           type="button"
           onClick={triggerSearch}
-          className="flex items-center gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-border/90 bg-background/80 hover:bg-accent text-xs text-muted-foreground hover:text-foreground transition-all shadow-xs active:scale-95 group cursor-pointer"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border/80 bg-background/80 hover:bg-accent text-xs text-muted-foreground hover:text-foreground transition-all shadow-xs active:scale-95 group cursor-pointer"
           title="Quick Search (Ctrl+K)"
         >
           <Search className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0 transition-transform group-hover:scale-110" />
-          <span className="hidden md:inline font-medium text-xs">Search tools & pages...</span>
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-muted text-[10px] font-semibold text-muted-foreground border border-border/80">
+          <span className="font-medium text-xs">Search tools...</span>
+          <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-muted text-[10px] font-semibold text-muted-foreground border border-border/80">
             Ctrl K
           </kbd>
+        </button>
+
+        {/* Mobile Search Icon (Clean Ghost Button) */}
+        <button
+          type="button"
+          onClick={triggerSearch}
+          className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-colors active:scale-95 cursor-pointer"
+          title="Search (Ctrl+K)"
+          aria-label="Search"
+        >
+          <Search className="w-5 h-5 text-purple-600 dark:text-purple-400" />
         </button>
 
         {/* Developer API Docs Link (Desktop) */}
         <Link
           href="/docs"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/90 bg-background/80 hover:bg-accent text-xs font-semibold text-foreground transition-all shadow-xs active:scale-95"
+          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background/80 hover:bg-accent text-xs font-semibold text-foreground transition-all shadow-xs active:scale-95"
           title="API Documentation"
         >
           <Code2 className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
           <span className="hidden lg:inline">API Docs</span>
         </Link>
 
-        {/* Interactive Notifications Bell Dropdown */}
+        {/* Interactive Notifications Bell (Clean Ghost Button) */}
         <div className="relative" ref={notifRef}>
           <button
             type="button"
@@ -211,13 +213,13 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
               setNotificationsOpen(!notificationsOpen);
               setProfileOpen(false);
             }}
-            className="relative p-2 sm:p-2.5 rounded-xl border border-border/90 bg-background/80 hover:bg-accent text-foreground transition-all shrink-0 active:scale-95 shadow-xs cursor-pointer"
+            className="relative p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-colors active:scale-95 cursor-pointer"
             aria-label="Notifications"
-            title="System Telemetry & Alerts"
+            title="System Alerts"
           >
-            <Bell className="w-4 h-4 text-slate-700 dark:text-slate-300" />
+            <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-purple-600 ring-2 ring-background animate-pulse" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-purple-600 ring-2 ring-background animate-pulse" />
             )}
           </button>
 
@@ -283,44 +285,44 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
           )}
         </div>
 
-        {/* Dark/Light Mode Switcher */}
+        {/* Theme Toggle (Clean Ghost Button) */}
         <button
           type="button"
           onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
-          className="p-2 sm:p-2.5 rounded-xl border border-border/90 bg-background/80 hover:bg-accent text-foreground transition-all shrink-0 active:scale-95 shadow-xs cursor-pointer"
+          className="p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-foreground hover:bg-muted/70 transition-colors active:scale-95 cursor-pointer"
           aria-label="Toggle Theme Mode"
           title={currentTheme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
         >
           {mounted ? (
             currentTheme === "dark" ? (
-              <Sun className="w-4 h-4 text-amber-400 transition-transform hover:rotate-45" />
+              <Sun className="w-5 h-5 text-amber-400 transition-transform hover:rotate-45" />
             ) : (
-              <Moon className="w-4 h-4 text-purple-600 transition-transform hover:-rotate-12" />
+              <Moon className="w-5 h-5 text-purple-600 transition-transform hover:-rotate-12" />
             )
           ) : (
-            <div className="w-4 h-4" />
+            <div className="w-5 h-5" />
           )}
         </button>
 
         {/* ------------------------------------------------------------------ */}
-        {/* User Profile Avatar Pill & Dropdown Menu                           */}
+        {/* User Profile Avatar Trigger (Clean Glowing Circle)                 */}
         {/* ------------------------------------------------------------------ */}
-        <div className="relative" ref={profileRef}>
+        <div className="relative ml-0.5 sm:ml-1" ref={profileRef}>
           <button
             type="button"
             onClick={() => {
               setProfileOpen(!profileOpen);
               setNotificationsOpen(false);
             }}
-            className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl border border-border/90 bg-background/80 hover:bg-accent transition-all shadow-xs active:scale-95 cursor-pointer group"
+            className="flex items-center gap-2 p-0.5 sm:px-2.5 sm:py-1 rounded-full sm:rounded-xl sm:border sm:border-border/80 sm:bg-background/80 hover:bg-accent transition-all cursor-pointer group active:scale-95"
             aria-label="User profile menu"
           >
-            {/* Avatar Initials Bubble with Gradient Ring */}
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 flex items-center justify-center text-white text-xs font-bold shadow-xs shrink-0">
+            {/* Standalone Circular Gradient Avatar */}
+            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-purple-700 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-purple-600/25 ring-2 ring-purple-500/25 group-hover:ring-purple-500/50 transition-all shrink-0">
               {getUserInitials()}
             </div>
 
-            {/* Name and Role (Desktop) */}
+            {/* Desktop Name and Role */}
             <div className="hidden sm:flex flex-col text-left min-w-0 pr-1">
               <span className="text-xs font-bold text-foreground truncate max-w-[120px]">
                 {user?.fullName || "User"}
@@ -331,7 +333,7 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
             </div>
 
             <ChevronDown
-              className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${
+              className={`hidden sm:inline w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${
                 profileOpen ? "rotate-180" : ""
               }`}
             />
@@ -339,10 +341,10 @@ export function Topbar({ title, onMenuClick, tagline = "AI Agent Infra" }: Topba
 
           {/* Profile Dropdown Popover */}
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-card border border-border shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-64 sm:w-72 rounded-2xl bg-card border border-border shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
               {/* Profile Card Header */}
               <div className="p-3 rounded-xl bg-muted/40 border border-border/60 mb-2">
-                <div className="font-bold text-xs text-foreground truncate">
+                <div className="font-bold text-xs sm:text-sm text-foreground truncate">
                   {user?.fullName || "User Account"}
                 </div>
                 <div className="text-[11px] text-muted-foreground truncate mt-0.5">

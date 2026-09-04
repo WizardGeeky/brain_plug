@@ -29,23 +29,23 @@ export function BrandLogo({
 
   // Responsive Standalone Icon Dimensions
   const iconDimensions = {
-    sm: "w-6 h-6 sm:w-7 sm:h-7",
-    md: "w-7 h-7 sm:w-9 sm:h-9",
-    lg: "w-9 h-9 sm:w-11 sm:h-11",
-    xl: "w-12 h-12 sm:w-14 sm:h-14",
+    sm: "w-7 h-7 sm:w-8 sm:h-8",
+    md: "w-8 h-8 sm:w-9 sm:h-9",
+    lg: "w-10 h-10 sm:w-12 sm:h-12",
+    xl: "w-13 h-13 sm:w-16 sm:h-16",
   }[size];
 
   const brandTextSize = {
-    sm: "text-xs sm:text-sm",
-    md: "text-sm sm:text-base",
-    lg: "text-lg sm:text-xl",
-    xl: "text-xl sm:text-2xl",
+    sm: "text-sm sm:text-base font-bold",
+    md: "text-base sm:text-lg font-extrabold",
+    lg: "text-xl sm:text-2xl font-black",
+    xl: "text-2xl sm:text-3xl font-black",
   }[size];
 
   const taglineSize = {
-    sm: "text-[8px] sm:text-[9px] tracking-wide",
-    md: "text-[8.5px] sm:text-[10px] tracking-wide",
-    lg: "text-[10px] sm:text-xs tracking-wider",
+    sm: "text-[8.5px] sm:text-[9.5px] tracking-wide",
+    md: "text-[9px] sm:text-[10.5px] tracking-wide",
+    lg: "text-[10.5px] sm:text-xs tracking-wider",
     xl: "text-xs tracking-widest",
   }[size];
 
