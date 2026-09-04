@@ -1,6 +1,10 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { BootstrapService } = await import("@/services/bootstrap/bootstrap.service");
-    await BootstrapService.ensureDefaults();
+    try {
+      const { BootstrapService } = await import("@/services/bootstrap/bootstrap.service");
+      await BootstrapService.ensureDefaults();
+    } catch {
+      // Safe fallback for startup initialization
+    }
   }
 }

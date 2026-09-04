@@ -306,8 +306,21 @@ export class BootstrapService {
 
       this.isInitialized = true;
       Logger.info("✅ System bootstrap completed: permissions, roles, super admin, and Gemini models synced.");
-    } catch (error) {
-      Logger.error("Error ensuring default system data on startup", error);
+    } catch (error: any) {
+      const isConnectionError =
+        error?.message?.includes("Can't reach database server") ||
+        error?.code === "P1001" ||
+        error?.name === "PrismaClientInitializationError";
+
+      if (isConnectionError) {
+        Logger.warn(
+          "⚠️ Database unreachable on startup (" +
+            (process.env.DATABASE_URL?.split("@")[1]?.split("/")[0] || "configured host") +
+            "). Ensure your PostgreSQL/Supabase database is running and reachable."
+        );
+      } else {
+        Logger.error("Error ensuring default system data on startup", error);
+      }
     }
   }
 }

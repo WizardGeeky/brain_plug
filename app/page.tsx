@@ -142,10 +142,10 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------------ */}
       {/* 1. MOBILE-OPTIMIZED TOP NAVBAR                                     */}
       {/* ------------------------------------------------------------------ */}
-      <header className="h-16 sm:h-20 border-b border-purple-100 bg-white/95 backdrop-blur-xl px-4 sm:px-8 flex items-center justify-between sticky top-0 z-50 shadow-xs">
+      <header className="h-16 sm:h-20 border-b border-purple-100 bg-white/95 backdrop-blur-xl px-3 sm:px-8 flex items-center justify-between sticky top-0 z-50 shadow-xs">
         {/* Brand Logo with responsive sizing */}
-        <div className="flex items-center min-w-0">
-          <BrandLogo size="md" tagline="Enterprise AI Agent Infra" href="/" variant="light" />
+        <div className="flex items-center min-w-0 shrink-0">
+          <BrandLogo size="md" tagline="Enterprise AI Agent Infra" taglineClassName="hidden sm:block" href="/" variant="light" />
         </div>
 
         {/* Desktop Navigation Links */}
@@ -168,9 +168,9 @@ export default function LandingPage() {
         </nav>
 
         {/* Action Buttons (Desktop & Mobile Adaptive) */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {/* Desktop Only: Sign In Outline Button */}
-          <Link href="/login" className="hidden sm:inline-flex">
+          <Link href="/login" className="hidden md:inline-flex">
             <button
               type="button"
               className="border border-purple-200 bg-white hover:bg-purple-50 text-purple-700 font-semibold text-xs h-9 px-3.5 rounded-xl shadow-xs transition-colors flex items-center justify-center cursor-pointer"
@@ -179,22 +179,22 @@ export default function LandingPage() {
             </button>
           </Link>
 
-          {/* Primary CTA: Register Workspace / Get Started */}
-          <Link href="/login?tab=register">
+          {/* Tablet & Desktop: Register Workspace CTA */}
+          <Link href="/login?tab=register" className="hidden sm:inline-flex shrink-0">
             <Button
               size="sm"
-              className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs h-9 px-3.5 sm:px-4 shadow-md shadow-purple-500/20"
+              className="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs h-9 px-4 shadow-md shadow-purple-500/20 rounded-xl flex items-center cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 mr-1" />
+              <Sparkles className="w-3.5 h-3.5 mr-1 shrink-0" />
               <span>Register Workspace</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1 hidden sm:inline" />
+              <ArrowRight className="w-3.5 h-3.5 ml-1 hidden lg:inline" />
             </Button>
           </Link>
 
           {/* Mobile Hamburger Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-700 hover:text-purple-700 hover:bg-purple-50 transition-colors focus:outline-none cursor-pointer"
+            className="lg:hidden p-2 rounded-xl text-slate-700 hover:text-purple-700 hover:bg-purple-50 transition-colors focus:outline-none cursor-pointer shrink-0"
             aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-purple-700" /> : <Menu className="w-5 h-5" />}

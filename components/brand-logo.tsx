@@ -8,6 +8,7 @@ export interface BrandLogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   showTagline?: boolean;
   tagline?: string;
+  taglineClassName?: string;
   href?: string;
   className?: string;
   isLink?: boolean;
@@ -18,6 +19,7 @@ export function BrandLogo({
   size = "md",
   showTagline = true,
   tagline = "AI Agent Infra",
+  taglineClassName,
   href = "/",
   className,
   isLink = true,
@@ -133,9 +135,10 @@ export function BrandLogo({
         {showTagline && (
           <span
             className={cn(
-              "whitespace-nowrap mt-0.5 sm:mt-1 block leading-none",
+              "whitespace-nowrap mt-0.5 sm:mt-1 leading-none",
               taglineTextColor,
-              taglineSize
+              taglineSize,
+              taglineClassName || "hidden sm:inline-block"
             )}
           >
             {tagline}
