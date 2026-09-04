@@ -49,32 +49,32 @@ interface GeminiModelItem {
 
 const COMMON_GEMINI_MODELS = [
   {
-    modelName: "gemini-2.5-flash",
-    displayName: "Gemini 2.5 Flash",
+    modelName: "gemini-2.0-flash",
+    displayName: "Gemini 2.0 Flash",
     tag: "Recommended ⚡",
     desc: "Ultra-fast response latency (~1.2s) & high accuracy",
   },
   {
-    modelName: "gemini-3.5-flash",
-    displayName: "Gemini 3.5 Flash",
-    tag: "Next-Gen 🚀",
-    desc: "Advanced multimodal speed and reasoning engine",
+    modelName: "gemini-1.5-flash",
+    displayName: "Gemini 1.5 Flash",
+    tag: "High Efficiency 🚀",
+    desc: "Lightweight, cost-efficient, and optimized for high volume chats",
   },
   {
-    modelName: "gemini-2.5-pro",
-    displayName: "Gemini 2.5 Pro",
+    modelName: "gemini-1.5-pro",
+    displayName: "Gemini 1.5 Pro",
     tag: "Reasoning 🧠",
     desc: "Deep reasoning and complex analytical intelligence",
   },
   {
-    modelName: "gemini-flash-latest",
-    displayName: "Gemini Flash Latest",
-    tag: "Auto-update 🔄",
-    desc: "Always tracks the latest Google Gemini Flash release",
+    modelName: "gemini-2.0-flash-lite",
+    displayName: "Gemini 2.0 Flash Lite",
+    tag: "Ultra Low Latency ⚡",
+    desc: "Lightweight and fastest response times for widgets",
   },
   {
-    modelName: "gemini-embedding-001",
-    displayName: "Gemini Embedding 001",
+    modelName: "text-embedding-004",
+    displayName: "Text Embedding 004",
     tag: "Vector RAG 📚",
     desc: "768-dim high speed semantic document embeddings",
   },
@@ -103,8 +103,8 @@ export default function ModelsRegistryPage() {
   // Model Registration Form State
   const [formData, setFormData] = useState({
     apiKey: "",
-    modelName: "gemini-2.5-flash",
-    displayName: "Gemini 2.5 Flash",
+    modelName: "gemini-2.0-flash",
+    displayName: "Gemini 2.0 Flash",
     status: "ACTIVE" as "ACTIVE" | "INACTIVE",
   });
   const [showModalKeyText, setShowModalKeyText] = useState(false);
@@ -234,8 +234,8 @@ export default function ModelsRegistryPage() {
   const handleOpenAddModal = () => {
     setFormData({
       apiKey: geminiApiKey.trim() || "",
-      modelName: "gemini-2.5-flash",
-      displayName: "Gemini 2.5 Flash",
+      modelName: "gemini-2.0-flash",
+      displayName: "Gemini 2.0 Flash",
       status: "ACTIVE",
     });
     setFormError(null);
@@ -516,7 +516,7 @@ export default function ModelsRegistryPage() {
                     <Badge variant="outline" className="text-[10px] font-mono text-primary border-primary/20">
                       {model.provider || "Google"}
                     </Badge>
-                    {model.modelName.includes("2.5-flash") && (
+                    {model.modelName.includes("flash") && (
                       <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">
                         ⚡ 1.2s Fast
                       </span>
@@ -631,7 +631,7 @@ export default function ModelsRegistryPage() {
                 </label>
                 <Input
                   required
-                  placeholder="e.g. gemini-2.5-flash"
+                  placeholder="e.g. gemini-2.0-flash"
                   value={formData.modelName}
                   onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
                   className="text-xs font-mono rounded-xl"

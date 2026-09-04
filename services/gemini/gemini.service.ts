@@ -161,10 +161,9 @@ export class GeminiService {
 
     const defaultFallbacks = [
       "gemini-2.0-flash",
-      "gemini-2.5-flash",
       "gemini-1.5-flash",
       "gemini-1.5-pro",
-      "gemini-2.0-flash-exp",
+      "gemini-2.0-flash-lite",
       "gemini-pro",
     ];
 
@@ -237,11 +236,21 @@ export class GeminiService {
     });
 
     if (!model || model.status !== "ACTIVE" || !model.isPublished) {
-      throw new AppError(
-        "The selected Gemini model is currently not available or published",
-        "MODEL_NOT_AVAILABLE",
-        400
-      );
+      // Fallback to first available active published model if exists
+      const fallbackModel = await prisma.geminiModel.findFirst({
+        where: { status: "ACTIVE", isPublished: true },
+      });
+      if (fallbackModel) {
+        return fallbackModel;
+      }
+      return {
+        id: modelId,
+        modelName: "gemini-2.0-flash",
+        displayName: "Gemini 2.0 Flash",
+        provider: "Google",
+        status: "ACTIVE" as const,
+        isPublished: true,
+      };
     }
 
     return model;
@@ -288,24 +297,22 @@ export class GeminiService {
     return vec;
   }
 
-  private static workingEmbeddingModel: string | null = "gemini-embedding-001";
+  private static workingEmbeddingModel: string | null = "text-embedding-004";
   private static embeddingUnavailable = false;
 
   public static resolveFastModel(requestedModel: string): string {
-    const clean = requestedModel.toLowerCase().trim();
-    if (clean.includes("2.5-flash") || clean === "gemini-2.5-flash") return "gemini-2.5-flash";
-    if (clean.includes("3.5-flash") || clean === "gemini-3.5-flash") return "gemini-3.5-flash";
-    if (clean.includes("2.5-pro") || clean === "gemini-2.5-pro") return "gemini-2.5-pro";
-    if (clean.includes("flash-latest") || clean === "gemini-flash-latest") return "gemini-flash-latest";
-    if (
-      clean.includes("3.6-flash") ||
-      clean.includes("2.0-flash") ||
-      clean.includes("1.5-flash") ||
-      clean.includes("flash-lite")
-    ) {
-      return "gemini-2.5-flash";
+    const clean = (requestedModel || "").toLowerCase().trim();
+    if (clean.includes("2.0-flash-lite") || clean.includes("flash-lite")) return "gemini-2.0-flash-lite";
+    if (clean.includes("2.0-flash") || clean === "gemini-2.0-flash") return "gemini-2.0-flash";
+    if (clean.includes("1.5-flash") || clean === "gemini-1.5-flash") return "gemini-1.5-flash";
+    if (clean.includes("1.5-pro") || clean === "gemini-1.5-pro" || clean.includes("2.5-pro")) return "gemini-1.5-pro";
+    if (clean.includes("2.0-pro") || clean.includes("gemini-2.0-pro")) return "gemini-2.0-flash";
+    if (clean.includes("2.5-flash") || clean.includes("3.5-flash") || clean.includes("3.6-flash") || clean.includes("flash-latest")) {
+      return "gemini-2.0-flash";
     }
-    return requestedModel;
+    if (clean.includes("pro")) return "gemini-1.5-pro";
+    if (clean.includes("flash")) return "gemini-2.0-flash";
+    return requestedModel || "gemini-2.0-flash";
   }
 
   /**
@@ -317,8 +324,8 @@ export class GeminiService {
     }
 
     const candidateModels = this.workingEmbeddingModel
-      ? [this.workingEmbeddingModel, "gemini-embedding-001", "gemini-embedding-2"]
-      : ["gemini-embedding-001", "gemini-embedding-2"];
+      ? [this.workingEmbeddingModel, "text-embedding-004", "embedding-001"]
+      : ["text-embedding-004", "embedding-001"];
 
     try {
       const client = await this.getClient(apiKeyOverride);
@@ -368,55 +375,91 @@ export class GeminiService {
     maxOutputTokens = 2048,
     apiKeyOverride?: string
   ): AsyncGenerator<string, void, unknown> {
-    const effectiveModel = this.resolveFastModel(modelName);
+    const primaryModel = this.resolveFastModel(modelName);
+    let client: GoogleGenerativeAI;
     try {
-      const client = await this.getClient(apiKeyOverride);
-      const model = client.getGenerativeModel({
-        model: effectiveModel,
-        systemInstruction: systemInstruction,
-        generationConfig: {
-          temperature,
-          maxOutputTokens,
-        },
-      });
-
-      const result = await model.generateContentStream(prompt);
-
-      for await (const chunk of result.stream) {
-        const text = chunk.text();
-        if (text) {
-          yield text;
-        }
-      }
-    } catch (err) {
-      Logger.error("Gemini streaming error, attempting fast fallback", err, { modelName, effectiveModel });
-      // If the primary model failed, attempt instant fallback to gemini-2.5-flash
-      if (effectiveModel !== "gemini-2.5-flash") {
-        try {
-          const client = await this.getClient(apiKeyOverride);
-          const fallbackModel = client.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            systemInstruction: systemInstruction,
-            generationConfig: { temperature, maxOutputTokens },
-          });
-          const result = await fallbackModel.generateContentStream(prompt);
-          for await (const chunk of result.stream) {
-            const text = chunk.text();
-            if (text) {
-              yield text;
-            }
-          }
-          return;
-        } catch (fallbackErr) {
-          Logger.error("Fallback streaming also failed", fallbackErr);
-        }
+      client = await this.getClient(apiKeyOverride);
+    } catch (clientErr: any) {
+      if (clientErr instanceof AppError) {
+        throw clientErr;
       }
       throw new AppError(
-        "Failed to stream response from Gemini model",
+        clientErr?.message || "Failed to initialize Gemini API client. Please verify API key configuration.",
         "AI_PROVIDER_ERROR",
         500
       );
     }
+
+    const fallbackCandidates = [
+      primaryModel,
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-1.5-pro",
+      "gemini-pro",
+    ];
+    const candidateModels = Array.from(new Set(fallbackCandidates));
+
+    let lastError: any = null;
+    let streamedAny = false;
+
+    for (const modelToTry of candidateModels) {
+      try {
+        const model = client.getGenerativeModel({
+          model: modelToTry,
+          systemInstruction: systemInstruction || undefined,
+          generationConfig: {
+            temperature,
+            maxOutputTokens,
+          },
+        });
+
+        const result = await model.generateContentStream(prompt);
+
+        for await (const chunk of result.stream) {
+          const text = chunk.text();
+          if (text) {
+            streamedAny = true;
+            yield text;
+          }
+        }
+
+        return;
+      } catch (err: any) {
+        lastError = err;
+        Logger.warn(`Gemini streaming attempt failed on model: ${modelToTry}`, {
+          error: err?.message || String(err),
+          modelToTry,
+        });
+
+        // If we already yielded tokens to the client stream, do not attempt to switch models mid-stream
+        if (streamedAny) {
+          throw err;
+        }
+
+        // Check if error is fatal auth/permission issue
+        const errMsg = (err?.message || "").toLowerCase();
+        if (
+          errMsg.includes("api_key_invalid") ||
+          errMsg.includes("api key not valid") ||
+          errMsg.includes("api key expired") ||
+          errMsg.includes("permission_denied")
+        ) {
+          break;
+        }
+      }
+    }
+
+    const failureReason = lastError?.message || "Internal AI Provider Error";
+    Logger.error("All Gemini candidate models failed to stream response", lastError, {
+      requestedModel: modelName,
+      candidateModels,
+    });
+
+    throw new AppError(
+      `Failed to stream response from Gemini model: ${failureReason}`,
+      "AI_PROVIDER_ERROR",
+      500
+    );
   }
 
   /**
