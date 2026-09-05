@@ -179,6 +179,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await requireAuth();
+    const isSuperAdmin = user.role === "SUPER_ADMIN";
     const { tenantId } = await requireTenantAccess();
 
     const body = await req.json();
@@ -192,14 +193,19 @@ export async function POST(req: NextRequest) {
       throw new AppError("Key Name is required", "VALIDATION_ERROR", 400);
     }
 
-    // Verify agent belongs to tenant
+    // Verify agent belongs to tenant or exists for Super Admin
     const agent = await prisma.agent.findFirst({
-      where: { id: agentId, tenantId },
+      where: {
+        id: agentId,
+        ...(!isSuperAdmin && tenantId ? { tenantId } : {}),
+      },
     });
 
     if (!agent) {
       throw new AppError("Agent not found in this organization", "NOT_FOUND", 404);
     }
+
+    const effectiveTenantId = agent.tenantId || tenantId;
 
     const { rawKey, keyPrefix, keyHash } = EncryptionService.generateApiKey("ak_live");
     const encryptedKey = EncryptionService.encrypt(rawKey);
@@ -210,7 +216,7 @@ export async function POST(req: NextRequest) {
 
     const apiKey = await prisma.apiKey.create({
       data: {
-        tenantId,
+        tenantId: effectiveTenantId,
         agentId,
         name: name.trim(),
         keyPrefix,
@@ -226,7 +232,7 @@ export async function POST(req: NextRequest) {
     });
 
     AuditService.log({
-      tenantId,
+      tenantId: effectiveTenantId,
       actorUserId: user.userId,
       action: "API_KEY_CREATED",
       entityType: "ApiKey",

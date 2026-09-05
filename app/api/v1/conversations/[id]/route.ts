@@ -8,11 +8,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await requireAuth();
     const { id } = await params;
+    const isSuperAdmin = user.role === "SUPER_ADMIN";
     const { tenantId } = await requireTenantAccess();
 
     const conversation = await prisma.conversation.findFirst({
-      where: { id, tenantId },
+      where: {
+        id,
+        ...(!isSuperAdmin && tenantId ? { tenantId } : {}),
+      },
       include: {
         agent: {
           select: {
@@ -44,12 +49,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAuth();
+    const user = await requireAuth();
     const { id } = await params;
+    const isSuperAdmin = user.role === "SUPER_ADMIN";
     const { tenantId } = await requireTenantAccess();
 
     await prisma.conversation.deleteMany({
-      where: { id, tenantId },
+      where: {
+        id,
+        ...(!isSuperAdmin && tenantId ? { tenantId } : {}),
+      },
     });
 
     return apiSuccess({ message: "Conversation deleted successfully" });

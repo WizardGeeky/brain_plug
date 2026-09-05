@@ -12,10 +12,14 @@ export async function POST(
   try {
     const user = await requireAuth();
     const { id: keyId } = await params;
+    const isSuperAdmin = user.role === "SUPER_ADMIN";
     const { tenantId } = await requireTenantAccess();
 
     const apiKey = await prisma.apiKey.findFirst({
-      where: { id: keyId, tenantId },
+      where: {
+        id: keyId,
+        ...(!isSuperAdmin && tenantId ? { tenantId } : {}),
+      },
     });
 
     if (!apiKey) {
@@ -31,7 +35,7 @@ export async function POST(
     });
 
     AuditService.log({
-      tenantId,
+      tenantId: apiKey.tenantId,
       actorUserId: user.userId,
       action: "API_KEY_REVOKED",
       entityType: "ApiKey",

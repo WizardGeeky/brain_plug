@@ -264,7 +264,11 @@ export class KnowledgeService {
     actorUserId?: string
   ) {
     const document = await prisma.document.findFirst({
-      where: { id: documentId, tenantId, deletedAt: null },
+      where: {
+        id: documentId,
+        ...(tenantId ? { tenantId } : {}),
+        deletedAt: null,
+      },
     });
 
     if (!document) {
@@ -280,7 +284,10 @@ export class KnowledgeService {
 
     await prisma.$transaction([
       prisma.documentChunk.deleteMany({
-        where: { documentId: document.id, tenantId },
+        where: {
+          documentId: document.id,
+          ...(tenantId ? { tenantId } : {}),
+        },
       }),
       prisma.document.update({
         where: { id: document.id },
@@ -292,7 +299,7 @@ export class KnowledgeService {
     ]);
 
     AuditService.log({
-      tenantId,
+      tenantId: document.tenantId || tenantId,
       actorUserId,
       action: "DOCUMENT_DELETED",
       entityType: "Document",

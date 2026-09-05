@@ -5,13 +5,18 @@ import { apiSuccess, apiError } from "@/lib/errors/app-error";
 
 export async function GET(req: NextRequest) {
   try {
+    const user = await requireAuth();
+    const isSuperAdmin = user.role === "SUPER_ADMIN";
     const { tenantId } = await requireTenantAccess();
     const searchParams = req.nextUrl.searchParams;
     const agentId = searchParams.get("agentId") || undefined;
+    const requestedTenantId = searchParams.get("tenantId") || undefined;
+
+    const effectiveTenantId = isSuperAdmin ? (requestedTenantId || tenantId) : tenantId;
 
     const conversations = await prisma.conversation.findMany({
       where: {
-        tenantId,
+        ...(effectiveTenantId ? { tenantId: effectiveTenantId } : {}),
         ...(agentId ? { agentId } : {}),
       },
       orderBy: { updatedAt: "desc" },
