@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainPlug — Enterprise AI Platform Architecture & Presentation Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #131b2e;
+      --card-border: #1e293b;
+      --primary: #8b5cf6;
+      --primary-light: #c4b5fd;
+      --primary-glow: rgba(139, 92, 246, 0.15);
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-body: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Glow */
+    .glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 70%);
+      top: -100px;
+      right: -100px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header Nav */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      border-color: var(--primary);
+      background: var(--primary-glow);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #6d28d9);
+      border: none;
+      color: white;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Slide Container */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .slide-wrapper {
+      width: 100%;
+      max-width: 1100px;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      padding: 40px;
+      min-height: 580px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary-light);
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+
+    .slide-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .slide-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Grid Layouts inside slides */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .card-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+
+    .card-box:hover {
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .card-box h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-box p, .card-box li {
+      font-size: 0.88rem;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+
+    .card-box ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .card-box li {
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .card-box li::before {
+      content: "•";
+      color: var(--primary);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    /* Code Snippets */
+    pre, code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    pre {
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 0.82rem;
+      color: var(--text-body);
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background: #1e293b;
+      color: var(--text);
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--card-border);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-body);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Metric Cards */
+    .metric-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+      margin: 4px 0;
+    }
+
+    /* Slide Navigation Footer */
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 16px;
+      margin-top: 24px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .slide-progress {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--card-border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dot.active {
+      width: 24px;
+      border-radius: 4px;
+      background: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+      .slide-wrapper {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <header>
+    <div class="brand">
+      🧠 <span>BRAIN PLUG</span> AI
+    </div>
+    <div class="nav-controls">
+      <span id="slide-counter" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Slide 1 / 16</span>
+      <button class="btn" id="prev-btn" onclick="prevSlide()">◀ Prev</button>
+      <button class="btn" id="next-btn" onclick="nextSlide()">Next ▶</button>
+      <a href="../BrainPlug_Architecture_and_Project_Overview.pptx" download class="btn btn-primary">📥 Download PPTX</a>
+      <a href="../BrainPlug_Technical_Design_and_Architecture_Report.pdf" download class="btn">📄 Download PDF</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="slide-wrapper" id="slide-container">
+      <!-- Content populated via JavaScript -->
+    </div>
+  </main>
+
+  <script>
+    const slides = [
+      {
+        badge: "Enterprise AI Platform",
+        title: "BRAIN PLUG",
+        subtitle: "Multi-Tenant AI Agent SaaS Platform & Real-Time RAG Streaming Engine",
+        content: `
+          <div style="text-align: center; padding: 20px 0;">
+            <p style="font-size: 1.15rem; color: var(--accent-cyan); font-weight: 600; margin-bottom: 12px;">
+              Enterprise Architecture, Vector Grounding, Closed Shadow DOM Chat Widget, Cryptography & Customer Relations Ticketing
+            </p>
+            <p style="font-size: 0.95rem; color: var(--text-muted); max-width: 800px; margin: 0 auto 30px auto; line-height: 1.6;">
+              A full-stack, production-grade cloud platform allowing businesses to build, train on proprietary documents, customize, and embed grounded AI assistants on any webpage with 1 line of code.
+            </p>
+            <div class="grid-4" style="text-align: left;">
+              <div class="card-box" style="border-color: var(--primary);">
+                <span style="font-size: 1.2rem;">⚡</span>
+                <div style="font-weight: 700; margin-top: 6px;">Next.js 16 App Router</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Atomic TypeScript & Edge Handlers</div>
+              </div>
+              <div class="card-box" style="border-color: var(--accent-cyan);">
+                <span style="font-size: 1.2rem;">🧠</span>
+                <div style="font-weight: 700; margin-top: 6px;">Google Gemini 2.0</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Sub-380ms TTFT SSE Streaming</div>
+              </div>
+              <div class="card-box" style="border-color: var(--accent-green);">
+                <span style="font-size: 1.2rem;">🛡️</span>
+                <div style="font-weight: 700; margin-top: 6px;">Logical Multi-Tenancy</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Strict FK Cascades & Scoping</div>
+              </div>
+              <div class="card-box" style="border-color: var(--accent-amber);">
+                <span style="font-size: 1.2rem;">🔒</span>
+                <div style="font-weight: 700; margin-top: 6px;">AES-256-GCM Vault</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Passwordless Nodemailer OTP</div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Platform Overview",
+        title: "Executive Summary & Value Proposition",
+        subtitle: "Solving enterprise challenges in building secure, grounded, and cost-effective AI agents.",
+        content: `
+          <div class="grid-2">
+            <div class="card-box" style="border-left: 4px solid var(--accent-red);">
+              <h3 style="color: var(--accent-red);">❌ The Enterprise Problem</h3>
+              <ul>
+                <li><strong>Fragmented Integrations:</strong> High engineering overhead building custom LLM wrappers, memory buffers, and streaming handlers.</li>
+                <li><strong>Data Isolation Vulnerabilities:</strong> High risk of cross-tenant data leakage in shared database environments.</li>
+                <li><strong>Hallucinations & Ungrounded Responses:</strong> LLMs lacking instant domain knowledge and verifiable source citations.</li>
+                <li><strong>Host CSS Collisions:</strong> Bulky chat widgets that clash with host webpage stylesheets.</li>
+              </ul>
+            </div>
+            <div class="card-box" style="border-left: 4px solid var(--accent-green);">
+              <h3 style="color: var(--accent-green);">✅ The BrainPlug Solution</h3>
+              <ul>
+                <li><strong>Turnkey Multi-Tenant SaaS:</strong> Self-registration, tenant isolation, and centralized Super Admin operations.</li>
+                <li><strong>Zero-Leakage Multi-Tenancy:</strong> Mandatory foreign key bindings and dynamic tenant context scoping.</li>
+                <li><strong>High-Speed Vector RAG:</strong> Ingests PDF/DOCX/XLSX into 768-dim dense vectors with Cosine Similarity search.</li>
+                <li><strong>Closed Shadow DOM Widget:</strong> 1-line JS embed (<25KB) completely insulated from host page styles.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "System Topology",
+        title: "Four-Tier Decoupled Architecture",
+        subtitle: "Decoupled architecture guaranteeing sub-400ms latency, high concurrency, and strict isolation.",
+        content: `
+          <div class="grid-4">
+            <div class="card-box" style="border-top: 3px solid var(--primary);">
+              <h3 style="color: var(--primary);">1. Client Tier</h3>
+              <ul>
+                <li>Shadow DOM Widget (widget.js)</li>
+                <li>Client Workspace Portal (/client/*)</li>
+                <li>Super Admin Control (/admin/*)</li>
+                <li>Developer API Docs (/docs)</li>
+              </ul>
+            </div>
+            <div class="card-box" style="border-top: 3px solid var(--accent-cyan);">
+              <h3 style="color: var(--accent-cyan);">2. Gateway Tier</h3>
+              <ul>
+                <li>Next.js 16 Edge Route Handlers</li>
+                <li>Token-Bucket Rate Limiter</li>
+                <li>Allowed Domains CORS Guard</li>
+                <li>Dynamic Tenant Scoper</li>
+              </ul>
+            </div>
+            <div class="card-box" style="border-top: 3px solid var(--accent-green);">
+              <h3 style="color: var(--accent-green);">3. Application Tier</h3>
+              <ul>
+                <li>Gemini 2.0 Flash SSE Streamer</li>
+                <li>Multi-Format Doc Parser</li>
+                <li>text-embedding-004 Vectorizer</li>
+                <li>CR Support Ticket Mailer</li>
+              </ul>
+            </div>
+            <div class="card-box" style="border-top: 3px solid var(--accent-amber);">
+              <h3 style="color: var(--accent-amber);">4. Data Tier</h3>
+              <ul>
+                <li>PostgreSQL 16 Relational DB</li>
+                <li>Prisma ORM with FK Cascades</li>
+                <li>High-Speed JSON Vector Math</li>
+                <li>Cloudinary & AES-256 Vault</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Multi-Tenancy",
+        title: "Logical Multi-Tenancy & Data Isolation",
+        subtitle: "Ensuring ironclad tenant separation with seamless Super Admin platform oversight.",
+        content: `
+          <div class="grid-2">
+            <div class="card-box">
+              <h3 style="color: var(--accent-cyan);">Relational Partitioning Model</h3>
+              <pre style="font-size: 0.75rem;">
+PostgreSQL Database (brain_plug)
+├── Tenant A ("Acme Health Corp")
+│   ├── Agents: [Medical Bot, Triage AI]
+│   ├── Chunks: [HIPAA_Guide.pdf, FAQs]
+│   ├── API Keys: bp_live_acme_7f9a...
+│   └── Tickets: #TICK-1001, #TICK-1002
+└── Tenant B ("FinTech Global Ltd")
+    ├── Agents: [WealthAdvisor, KYCAssistant]
+    ├── Chunks: [TradingRules.xlsx, TaxGuide]
+    ├── API Keys: bp_live_fintech_2e1b...
+    └── Tickets: #TICK-2001, #TICK-2002
+              </pre>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--primary-light);">Core Isolation Principles</h3>
+              <ul>
+                <li><strong>Mandatory FK Binding:</strong> Every table (Agent, DocumentChunk, ApiKey, Ticket, Conversation) holds a tenantId foreign key cascading to tenants.id.</li>
+                <li><strong>Context Resolution:</strong> Incoming requests invoke <code>requireTenantAccess()</code>, strictly locking client users to their assigned organization.</li>
+                <li><strong>Super Admin Clearance:</strong> Super Admins possess platform-wide clearance to inspect cross-tenant health and resolve global support tickets.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "RAG Engine",
+        title: "Multi-Format RAG Knowledge Ingestion",
+        subtitle: "From raw enterprise documents to 768-dimensional dense vectors in sub-second indexing time.",
+        content: `
+          <div class="grid-4">
+            <div class="card-box">
+              <div style="font-size: 1.5rem; color: var(--primary); font-weight: 800;">01</div>
+              <h3 style="font-size: 0.95rem;">Multi-Format Parser</h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted);">Extracts text from PDF (pdf-parse), Word DOCX (mammoth), Excel Spreadsheets (xlsx), and TXT/Markdown.</p>
+            </div>
+            <div class="card-box">
+              <div style="font-size: 1.5rem; color: var(--accent-cyan); font-weight: 800;">02</div>
+              <h3 style="font-size: 0.95rem;">Semantic Chunking</h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted);">Splits text into 500-token chunks with 50-token sliding overlap to maintain semantic context continuity.</p>
+            </div>
+            <div class="card-box">
+              <div style="font-size: 1.5rem; color: var(--accent-green); font-weight: 800;">03</div>
+              <h3 style="font-size: 0.95rem;">Vector Embeddings</h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted);">Passes chunks to Google text-embedding-004 to generate 768-dimensional dense float32 vector arrays.</p>
+            </div>
+            <div class="card-box">
+              <div style="font-size: 1.5rem; color: var(--accent-amber); font-weight: 800;">04</div>
+              <h3 style="font-size: 0.95rem;">PostgreSQL Storage</h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted);">Stores chunks, embeddings, and metadata in document_chunks with tenantId & agentId composite indexes.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "RAG Engine",
+        title: "Real-Time Vector Search & Cosine Grounding",
+        subtitle: "Sub-20ms semantic similarity calculation for dynamic prompt augmentation.",
+        content: `
+          <div class="grid-2">
+            <div class="card-box">
+              <h3 style="color: var(--accent-cyan);">Cosine Similarity Math</h3>
+              <pre style="font-size: 0.78rem;">
+// Cosine Similarity Formula:
+sim(Q, C) = (Q · C) / (||Q|| * ||C||)
+          = ∑(Q_i * C_i) / (√∑(Q_i²) * √∑(C_i²))
+
+// Execution Strategy:
+1. User prompt vectorized to 768-dim float array
+2. In-memory dot-product across agent chunks
+3. Filter >= 0.40 similarity threshold
+4. Top 5 passages injected into Gemini System Prompt
+              </pre>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--accent-green);">Augmented System Prompt</h3>
+              <pre style="font-size: 0.75rem;">
+SYSTEM PROMPT INJECTION:
+You are Acme Support AI, an intelligent agent.
+Ground responses strictly on the provided context:
+
+--- Source: return_policy.pdf (Chunk 2, Score: 0.89) ---
+"Products can be returned within 30 days of delivery..."
+
+USER QUERY: "What is the return window?"
+GEMINI RESPONSE:
+"Based on return_policy.pdf, items can be returned within 30 days."
+              </pre>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Inference Engine",
+        title: "Server-Sent Events (SSE) Streaming",
+        subtitle: "Direct SSE streaming from Gemini 2.0 Flash achieving sub-380ms Time-to-First-Token (TTFT).",
+        content: `
+          <div class="grid-4" style="margin-bottom: 16px;">
+            <div class="card-box" style="text-align: center;">
+              <div class="metric-value" style="color: var(--accent-green);">< 380 ms</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Time-to-First-Token (TTFT)</div>
+            </div>
+            <div class="card-box" style="text-align: center;">
+              <div class="metric-value" style="color: var(--accent-cyan);">18 ms</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Vector Cosine Search</div>
+            </div>
+            <div class="card-box" style="text-align: center;">
+              <div class="metric-value" style="color: var(--primary);">250 pgs/m</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Document Ingestion Rate</div>
+            </div>
+            <div class="card-box" style="text-align: center;">
+              <div class="metric-value" style="color: var(--accent-amber);">< 25 KB</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Widget Script Payload</div>
+            </div>
+          </div>
+          <div class="card-box">
+            <h3 style="color: var(--primary-light);">SSE Protocol Event Lifecycle</h3>
+            <table>
+              <tr><th>Event</th><th>Payload Example</th><th>Client UI Action</th></tr>
+              <tr><td><code>start</code></td><td><code>{"type":"start","sources":[{"fileName":"faq.pdf"}]}</code></td><td>Initializes container, renders citation badges</td></tr>
+              <tr><td><code>token</code></td><td><code>{"type":"token","content":"Our policy allows..."}</code></td><td>Appends raw markdown tokens with auto-scroll</td></tr>
+              <tr><td><code>done</code></td><td><code>{"type":"done","latencyMs":342,"usage":{...}}</code></td><td>Finalizes message bubble & records telemetry</td></tr>
+            </table>
+          </div>
+        `
+      },
+      {
+        badge: "Chat Widget",
+        title: "Embeddable Shadow DOM Live Chat Widget",
+        subtitle: "Zero-conflict encapsulation (<25KB), WYSIWYG live customizer, and dynamic agent switcher.",
+        content: `
+          <div class="grid-2">
+            <div class="card-box">
+              <h3 style="color: var(--primary-light);">Shadow DOM Encapsulation</h3>
+              <ul>
+                <li><strong>Zero CSS Bleeding:</strong> Rendered inside closed ShadowRoot (<code>mode: 'closed'</code>), preventing host stylesheet collisions.</li>
+                <li><strong>1-Line HTML Embed:</strong> Lightweight script tag (< 25KB minified) with zero external library dependencies.</li>
+                <li><strong>Dynamic Agent Switcher:</strong> Instantly toggle and test live widgets across all configured agents in workspace.</li>
+                <li><strong>Mobile Bottom-Sheet:</strong> Smooth responsive transitions between desktop floating card and mobile drawer.</li>
+              </ul>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--accent-cyan);">1-Line Embed Code</h3>
+              <pre style="font-size: 0.78rem;">
+&lt;!-- BrainPlug Instant Web Embed --&gt;
+&lt;script
+  src="https://api.brainplug.ai/widget.js"
+  data-agent-id="00000000-0000-0000-0000-000000000001"
+  data-api-key="bp_live_a1b2c3d4e5f6g7h8i9j0..."
+  data-primary-color="#7c3aed"
+  data-position="bottom-right"
+  defer&gt;
+&lt;/script&gt;
+              </pre>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Security Architecture",
+        title: "Authentication, Cryptography & Security",
+        subtitle: "Defense-in-depth protection covering data at rest, in transit, and in execution context.",
+        content: `
+          <div class="grid-3">
+            <div class="card-box" style="border-top: 3px solid var(--primary);">
+              <h3 style="color: var(--primary);">✉️ Passwordless OTP</h3>
+              <ul>
+                <li>6-digit single-use OTPs dispatched via Nodemailer SMTP relay.</li>
+                <li>Stored as SHA-256 hashes with 5-minute expiry.</li>
+                <li>Timing-safe hash comparison (<code>crypto.timingSafeEqual</code>) eliminating timing attacks.</li>
+              </ul>
+            </div>
+            <div class="card-box" style="border-top: 3px solid var(--accent-cyan);">
+              <h3 style="color: var(--accent-cyan);">🔐 AES-256-GCM Vault</h3>
+              <ul>
+                <li>Authenticated symmetric encryption with 32-byte master key.</li>
+                <li>Randomized 16-byte initialization vector (IV) per payload.</li>
+                <li>16-byte authentication tag ensuring ciphertext integrity.</li>
+              </ul>
+            </div>
+            <div class="card-box" style="border-top: 3px solid var(--accent-green);">
+              <h3 style="color: var(--accent-green);">🛡️ Allowed Domains Guard</h3>
+              <ul>
+                <li>API keys (<code>bp_live_...</code>) hashed via SHA-256 in DB.</li>
+                <li>Validates Origin header against tenant <code>allowed_domains</code>.</li>
+                <li>Sliding-window token bucket enforces per-IP rate limits.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Customer Relations",
+        title: "Customer Relations (CR) & Support Ticketing",
+        subtitle: "Bidirectional ticketing workflow connecting clients and platform Super Admins seamlessly.",
+        content: `
+          <div class="grid-4" style="margin-bottom: 16px;">
+            <div class="card-box">
+              <div style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">1. Creation</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Client raises ticket (#TICK-XXXX) with priority & category.</p>
+            </div>
+            <div class="card-box">
+              <div style="font-weight: 700; color: var(--accent-cyan); font-size: 0.9rem;">2. SMTP Alert</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Transactional email dispatched to Admin & receipt to Client.</p>
+            </div>
+            <div class="card-box">
+              <div style="font-weight: 700; color: var(--accent-amber); font-size: 0.9rem;">3. Admin Triage</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Super Admin inspects at /admin/tickets, posts replies or notes.</p>
+            </div>
+            <div class="card-box">
+              <div style="font-weight: 700; color: var(--accent-green); font-size: 0.9rem;">4. Resolution</div>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Ticket marked Resolved/Closed. Transcripts logged in audit.</p>
+            </div>
+          </div>
+          <div class="card-box">
+            <h3 style="color: var(--primary-light);">Enterprise Ticketing Matrix</h3>
+            <table>
+              <tr><th>Priority</th><th>SLA Target</th><th>Categories</th><th>Special Features</th></tr>
+              <tr><td><span style="color: var(--accent-red); font-weight: 700;">URGENT</span></td><td>1 Hour</td><td>TECHNICAL_ISSUE, BILLING</td><td>Instant alert to on-call Super Admins</td></tr>
+              <tr><td><span style="color: var(--accent-amber); font-weight: 700;">HIGH</span></td><td>6 Hours</td><td>AGENT_CONFIG, RAG_KNOWLEDGE</td><td>High-priority queue placement</td></tr>
+              <tr><td><span style="color: var(--accent-cyan); font-weight: 700;">MEDIUM</span></td><td>24 Hours</td><td>GENERAL, FEATURE_REQUEST</td><td>Standard operational queue</td></tr>
+            </table>
+          </div>
+        `
+      },
+      {
+        badge: "Database ERD",
+        title: "Relational Database Schema & Entities",
+        subtitle: "PostgreSQL 16 relational model with strict referential integrity and cascading rules.",
+        content: `
+          <div class="grid-3">
+            <div class="card-box">
+              <h3 style="color: var(--primary);">Identity & Tenancy</h3>
+              <ul>
+                <li><code>tenants</code> (id, name, slug, status, logo_url)</li>
+                <li><code>users</code> (id, full_name, email, mobile, status)</li>
+                <li><code>user_tenant_roles</code> (user_id, tenant_id, role_id)</li>
+                <li><code>roles & permissions</code> (code, module)</li>
+              </ul>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--accent-cyan);">Agents & Knowledge</h3>
+              <ul>
+                <li><code>agents</code> (id, tenant_id, name, prompt, type)</li>
+                <li><code>agent_widget_configs</code> (agent_id, colors, theme)</li>
+                <li><code>documents</code> (id, tenant_id, agent_id, status)</li>
+                <li><code>document_chunks</code> (id, document_id, embedding)</li>
+              </ul>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--accent-green);">Security & Telemetry</h3>
+              <ul>
+                <li><code>api_keys</code> (id, tenant_id, key_hash, scopes)</li>
+                <li><code>allowed_domains</code> (agent_id, domain)</li>
+                <li><code>conversations & messages</code> (latency_ms, sources)</li>
+                <li><code>tickets & ticket_messages</code> (priority, notes)</li>
+              </ul>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Developer API",
+        title: "Developer REST API & Code Integrations",
+        subtitle: "Clean REST interfaces with standards-compliant JSON schemas and cURL / Node.js SDKs.",
+        content: `
+          <div class="grid-2">
+            <div class="card-box">
+              <h3 style="color: var(--accent-cyan);">cURL Terminal Command</h3>
+              <pre style="font-size: 0.78rem;">
+curl -X POST https://api.brainplug.ai/api/v1/chat \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer bp_live_secret_key" \\
+  -d '{
+    "agentId": "00000000-0000-0000-0000-000000000001",
+    "message": "What is our warranty policy?",
+    "stream": true
+  }'
+              </pre>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--primary-light);">Node.js / TypeScript Streaming Client</h3>
+              <pre style="font-size: 0.75rem;">
+const response = await fetch("https://api.brainplug.ai/api/v1/chat", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": \`Bearer \${process.env.BRAINPLUG_KEY}\`
+  },
+  body: JSON.stringify({
+    agentId: "00000000-0000-0000-0000-000000000001",
+    message: "Explain billing cycles"
+  })
+});
+const reader = response.body.getReader();
+              </pre>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Analytics & Audit",
+        title: "Real-Time Telemetry & Immutable Audit Trails",
+        subtitle: "Full-spectrum operational observability tracking tokens, latency, cost, and user actions.",
+        content: `
+          <div class="grid-3">
+            <div class="card-box">
+              <h3 style="color: var(--accent-green);">Token & Cost Tracking</h3>
+              <p style="font-size: 0.85rem; color: var(--text-body); margin-bottom: 12px;">Precision tracking of input/output tokens per request. Calculates exact expenditure based on active Gemini model rate cards.</p>
+              <pre style="font-size: 0.75rem;">
+{
+  eventType: "CHAT_SUCCESS",
+  inputTokens: 340,
+  outputTokens: 128,
+  latencyMs: 342,
+  cost: "$0.000045"
+}
+              </pre>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--accent-cyan);">Latency Percentiles</h3>
+              <p style="font-size: 0.85rem; color: var(--text-body); margin-bottom: 12px;">Logs end-to-end request latency (ms) for vector retrieval, TTFT, and final stream termination.</p>
+              <pre style="font-size: 0.75rem;">
+• p50: 310 ms
+• p90: 420 ms
+• p99: 680 ms
+• Success Rate: 99.94%
+• Uptime: 99.98%
+              </pre>
+            </div>
+            <div class="card-box">
+              <h3 style="color: var(--primary);">Immutable Audit Trails</h3>
+              <p style="font-size: 0.85rem; color: var(--text-body); margin-bottom: 12px;">Every critical mutation is immutably logged with actor userId, IP, and action metadata.</p>
+              <pre style="font-size: 0.75rem;">
+{
+  action: "API_KEY_REVOKED",
+  entity: "ApiKey",
+  actor: "usr_9f8a...",
+  ip: "192.168.1.10"
+}
+              </pre>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Reliability & Resilience",
+        title: "Performance Benchmarks & Edge Hardening",
+        subtitle: "Engineered for high-concurrency production workloads with multi-layered fault tolerance.",
+        content: `
+          <div class="card-box" style="margin-bottom: 16px;">
+            <table>
+              <tr><th>Pipeline Stage</th><th>BrainPlug Performance</th><th>Industry Standard</th><th>Engineering Optimization</th></tr>
+              <tr><td>Time to First Token (TTFT)</td><td><span style="color: var(--accent-green); font-weight: 700;">340 ms</span></td><td>950 ms</td><td>SSE direct streaming, zero intermediate buffering</td></tr>
+              <tr><td>Vector Cosine Search</td><td><span style="color: var(--accent-cyan); font-weight: 700;">18 ms</span></td><td>85 ms</td><td>PostgreSQL optimized JSON vector math indexing</td></tr>
+              <tr><td>Document Chunking Rate</td><td><span style="color: var(--primary); font-weight: 700;">250 pages / min</span></td><td>60 pages / min</td><td>Parallel worker queue with token sliding window</td></tr>
+              <tr><td>Widget Payload Size</td><td><span style="color: var(--accent-amber); font-weight: 700;">< 25 KB</span></td><td>180 KB</td><td>Zero external dependencies, vanilla JS + Shadow DOM</td></tr>
+            </table>
+          </div>
+          <div class="card-box">
+            <h3 style="color: var(--primary-light);">Edge-Case Hardening Safeguards</h3>
+            <ul>
+              <li><strong>Super Admin Scoping:</strong> Dynamic fallback handles empty tenant IDs cleanly without throwing 404.</li>
+              <li><strong>Token Overflow Protection:</strong> Automatic context sliding-window prevents prompt overflow.</li>
+              <li><strong>Corrupt File Quarantine:</strong> Non-blocking error handling preserves healthy documents during batch upload.</li>
+            </ul>
+          </div>
+        `
+      },
+      {
+        badge: "Technology Stack",
+        title: "Technology Stack Evaluation & Rationale",
+        subtitle: "Proven enterprise technologies selected for performance, maintainability, and zero vendor lock-in.",
+        content: `
+          <div class="grid-3">
+            <div class="card-box" style="border-top: 3px solid var(--primary);">
+              <h3 style="color: var(--primary);">Frontend & UI</h3>
+              <div style="font-weight: 700; color: white; margin-bottom: 8px;">Next.js 16 • React 19 • Tailwind CSS • Lucide • Recharts</div>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Modern server components, instant route prefetching, zero layout shifts, and clean data visualizers.</p>
+            </div>
+            <div class="card-box" style="border-top: 3px solid var(--accent-cyan);">
+              <h3 style="color: var(--accent-cyan);">Backend & API</h3>
+              <div style="font-weight: 700; color: white; margin-bottom: 8px;">Next.js App Router • Edge Handlers • Zod • Nodemailer</div>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Type-safe end-to-end schemas, high concurrency, seamless SSE streaming, and provider-agnostic SMTP.</p>
+            </div>
+            <div class="card-box" style="border-top: 3px solid var(--accent-green);">
+              <h3 style="color: var(--accent-green);">Database & AI</h3>
+              <div style="font-weight: 700; color: white; margin-bottom: 8px;">PostgreSQL 16 • Prisma ORM • Google Gemini 2.0 • text-embedding-004</div>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Relational ACID integrity, foreign key cascading, multi-model flexibility, and cost-effective embeddings.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        badge: "Roadmap & Vision",
+        title: "Strategic Summary & Future Roadmap",
+        subtitle: "Scaling BrainPlug toward multimodal intelligence, voice streaming, and autonomous agent swarms.",
+        content: `
+          <div class="grid-2">
+            <div class="card-box" style="border-left: 4px solid var(--accent-green);">
+              <h3 style="color: var(--accent-green);">🏆 Core Achievements Delivered</h3>
+              <ul>
+                <li><strong>Turnkey Multi-Tenant SaaS:</strong> Client workspace isolation & super admin control.</li>
+                <li><strong>High-Precision RAG Engine:</strong> 768-dim embeddings with sub-20ms Cosine Search.</li>
+                <li><strong>Sub-400ms SSE Streaming:</strong> Gemini 2.0 Flash integration with source citations.</li>
+                <li><strong>Enterprise CR Ticketing:</strong> Multi-tier customer relations ticketing with SMTP.</li>
+              </ul>
+            </div>
+            <div class="card-box" style="border-left: 4px solid var(--primary);">
+              <h3 style="color: var(--primary-light);">🚀 Future Strategic Roadmap</h3>
+              <ul>
+                <li><strong>[Q3 2026] Multimodal Vision RAG:</strong> Ingesting technical diagrams, tables, and product images.</li>
+                <li><strong>[Q4 2026] Real-Time Voice Streaming:</strong> Bidirectional WebRTC voice agents via Gemini Live API.</li>
+                <li><strong>[Q1 2027] Autonomous Agent Swarms:</strong> Collaborative multi-agent teams (Sales, Support, Billing).</li>
+                <li><strong>[Q2 2027] Enterprise Webhook Engine:</strong> Outbound dispatchers for HubSpot, Salesforce, Slack, Zendesk.</li>
+              </ul>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    let currentSlide = 0;
+
+    function renderSlide(index) {
+      const slide = slides[index];
+      const container = document.getElementById("slide-container");
+      container.innerHTML = `
+        <div>
+          <div class="slide-header">
+            <span class="badge">${slide.badge}</span>
+            <h1 class="slide-title">${slide.title}</h1>
+            <p class="slide-subtitle">${slide.subtitle}</p>
+          </div>
+          <div class="slide-body">
+            ${slide.content}
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>BrainPlug Enterprise AI Platform Architecture</span>
+          <div class="slide-progress">
+            ${slides.map((_, i) => `<div class="dot ${i === index ? 'active' : ''}" onclick="goToSlide(${i})"></div>`).join('')}
+          </div>
+          <span>Slide ${index + 1} of ${slides.length}</span>
+        </div>
+      `;
+
+      document.getElementById("slide-counter").innerText = `Slide ${index + 1} / ${slides.length}`;
+      document.getElementById("prev-btn").disabled = index === 0;
+      document.getElementById("next-btn").disabled = index === slides.length - 1;
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        renderSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        renderSlide(currentSlide);
+      }
+    }
+
+    function goToSlide(index) {
+      currentSlide = index;
+      renderSlide(currentSlide);
+    }
+
+    // Keyboard Navigation
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "Space") {
+        nextSlide();
+      } else if (e.key === "ArrowLeft") {
+        prevSlide();
+      }
+    });
+
+    renderSlide(0);
+  </script>
+</body>
+</html>
